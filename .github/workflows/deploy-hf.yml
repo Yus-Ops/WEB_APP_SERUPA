@@ -1,0 +1,64 @@
+name: Deploy backend ke HuggingFace Space
+
+# Otomatis men-deploy isi folder backend/ ke HF Space setiap ada perubahan
+# di backend/ pada branch utama. Bisa juga dijalankan manual dari tab Actions
+# (workflow_dispatch). Hanya backend/ yang dikirim — frontend/ TIDAK ikut.
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy-hf.yml"
+  workflow_dispatch:
+
+env:
+  # ── EDIT SEKALI: id Space HF kamu, format "username/nama-space".
+  HF_SPACE: "Serupa"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install huggingface_hub
+        run: pip install --upgrade "huggingface_hub>=0.25"
+
+      - name: Upload backend/ ke HF Space
+        env:
+          # Simpan di GitHub: Settings -> Secrets and variables -> Actions -> New repository secret.
+          # Name: HF_TOKEN  |  Value: token HF (role "write").
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python - <<'PY'
+          import os
+          from huggingface_hub import HfApi
+
+          space = os.environ["HF_SPACE"]
+          api = HfApi(token=os.environ["HF_TOKEN"])
+
+          # Buat Space bila belum ada (aman bila sudah dibuat manual via UI).
+          api.create_repo(repo_id=space, repo_type="space", space_sdk="docker", exist_ok=True)
+
+          api.upload_folder(
+              folder_path="backend",
+              repo_id=space,
+              repo_type="space",
+              commit_message=f"Deploy dari GitHub Actions ({os.environ.get('GITHUB_SHA','')[:7]})",
+              # Yang TIDAK perlu ada di Space: rahasia, input indexer lokal, tooling, cache.
+              ignore_patterns=[
+                  ".env", ".env.*",
+                  "Corpus.csv", "*.xlsx",
+                  "indexer.py", "corpus_io.py", "topics.py", "verify_labels.py",
+                  "schema.sql",
+                  "__pycache__/*", "*.pyc", ".venv/*",
+              ],
+          )
+          print(f"OK - backend/ ter-deploy ke https://huggingface.co/spaces/{space}")
+          PY

@@ -1,0 +1,20 @@
+# File yang TIDAK ikut ke image HF Space (build context = folder backend/).
+# Alasan: rahasia, atau hanya dipakai indexer LOKAL (bukan app.py saat runtime).
+
+# Rahasia
+.env
+.env.*
+
+# Input & tooling indexer (lokal saja — tak dipakai app.py saat runtime)
+Corpus.csv
+*.xlsx
+indexer.py
+corpus_io.py
+topics.py
+verify_labels.py
+schema.sql
+
+# Cache / virtualenv
+__pycache__/
+*.pyc
+.venv/

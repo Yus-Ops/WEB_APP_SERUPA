@@ -1,0 +1,370 @@
+/* ============================================================================
+   Observatorium Skripsi — design system  (v2: "Atlas Tema")
+   Konsep: korpus satu jurusan = atlas tema riset di atas kertas; tiap skripsi =
+   sebuah titik tema; calon judulmu = titik baru yang mencari tetangga tematik
+   terdekatnya. Bukan langit malam — melainkan ruang baca yang terang.
+
+   Palet (dari CLAUDE.md):
+     Night Bordeaux #66101f · Smoky Rose #855a5c · Grey Olive #8a8e91
+     Pale Sky #b8d4e3 · Frosted Mint #eeffdb
+   Pita kemiripan dipetakan langsung ke palet — dingin→hangat→pekat:
+     aman = Pale Sky · mirip = Smoky Rose · sangat mirip = Night Bordeaux
+   ========================================================================== */
+
+:root {
+  /* Kertas berlapis (ruang baca) */
+  --bg-0: #f4f1e7; /* kertas hangat (latar utama) */
+  --bg-1: #efece0;
+  --bg-2: #e9e6d8;
+  --surface: #fdfbf4; /* kartu — putih hangat */
+  --surface-2: #f1eee2; /* hover / isian lembut */
+  --surface-3: #eaf0f3; /* aksen sejuk (sky tint) */
+  --border: #e1dccb;
+  --border-2: #d2ccb6;
+
+  /* Tinta */
+  --ink: #66101f; /* Night Bordeaux — warna judul & merek */
+  --text: #2c2329; /* tubuh teks (near-black hangat) */
+  --muted: #6f636a; /* sekunder */
+  --faint: #9a9088; /* tersier / keterangan */
+
+  /* Merek & aksen */
+  --brand: #66101f; /* Night Bordeaux */
+  --brand-2: #8a1b2f; /* bordeaux lebih terang (gradien/hover) */
+  --accent: #2f6e88; /* Pale Sky dipekatkan → "kamu"/query, terbaca */
+  --accent-soft: #b8d4e3; /* Pale Sky asli — isian lembut */
+  --rose-soft: #855a5c; /* Smoky Rose */
+  --olive: #8a8e91; /* Grey Olive */
+  --mint: #eeffdb; /* Frosted Mint */
+
+  /* Alias mundur-kompatibel (jaga referensi lama tetap on-palette) */
+  --cyan: var(--accent);
+  --cyan-2: #3a82a0;
+
+  /* Pita kemiripan (sinkron dgn BANDS di bands.js & backend/app.py) */
+  --aman: #2f7088; /* Pale Sky pekat — dingin/aman */
+  --mirip: #8a4f53; /* Smoky Rose pekat — hangat/hati-hati */
+  --sangat_mirip: #66101f; /* Night Bordeaux — pekat/peringatan */
+  /* alias lama */
+  --emerald: var(--aman);
+  --amber: var(--mirip);
+  --rose: var(--sangat_mirip);
+
+  /* Palet klaster topik (titik peta di atas kertas) */
+  --c0: #66101f; /* bordeaux  */
+  --c1: #2f7088; /* sky pekat */
+  --c2: #b07d2e; /* oker      */
+  --c3: #5f7d3f; /* sage      */
+  --c4: #4f6480; /* slate     */
+  --c5: #9c4f6b; /* plum      */
+  --c6: #855a5c; /* smoky rose*/
+  --c7: #8a8e91; /* grey olive (netral/lainnya) */
+
+  --shadow: 0 22px 48px -30px rgba(60, 22, 30, 0.32);
+  --shadow-sm: 0 10px 24px -18px rgba(60, 22, 30, 0.28);
+  --radius: 18px;
+  --radius-sm: 12px;
+
+  --serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --sans: "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --mono: "Spline Sans Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --maxw: 1160px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--sans);
+  color: var(--text);
+  background:
+    radial-gradient(1100px 680px at 88% -10%, rgba(184, 212, 227, 0.5), transparent 56%),
+    radial-gradient(980px 640px at -8% 110%, rgba(238, 255, 219, 0.62), transparent 55%),
+    radial-gradient(760px 520px at 50% 44%, rgba(102, 16, 31, 0.035), transparent 60%),
+    var(--bg-0);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  line-height: 1.55;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--serif);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+strong {
+  color: var(--text);
+  font-weight: 650;
+}
+
+::selection {
+  background: rgba(184, 212, 227, 0.62);
+  color: #1c2a32;
+}
+
+/* ── Layout helpers ──────────────────────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.muted {
+  color: var(--muted);
+}
+.faint {
+  color: var(--faint);
+}
+.serif {
+  font-family: var(--serif);
+}
+.mono {
+  font-family: var(--mono);
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+/* ── Cards / panels ──────────────────────────────────────────────────────── */
+.card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0)),
+    var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.card-pad {
+  padding: 22px;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease,
+    box-shadow 0.15s ease, opacity 0.15s ease;
+}
+.btn:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+  transform: translateY(-1px);
+}
+.btn:active {
+  transform: translateY(0);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-primary {
+  color: #fdf3ee;
+  background: linear-gradient(180deg, var(--brand-2), var(--brand));
+  border-color: transparent;
+  box-shadow: 0 14px 30px -14px rgba(102, 16, 31, 0.6);
+}
+.btn-primary:hover {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(180deg, #9c2034, var(--brand-2));
+  box-shadow: 0 18px 38px -14px rgba(102, 16, 31, 0.72);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border);
+}
+.btn-ghost:hover {
+  background: var(--surface-2);
+}
+
+.btn-sm {
+  padding: 7px 12px;
+  font-size: 13px;
+}
+
+/* ── Inputs ──────────────────────────────────────────────────────────────── */
+.input,
+.textarea,
+.select {
+  width: 100%;
+  font-family: var(--sans);
+  font-size: 15px;
+  color: var(--text);
+  background: #fbfaf2;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--faint);
+}
+.input:focus,
+.textarea:focus,
+.select:focus {
+  outline: none;
+  background: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(47, 110, 136, 0.16);
+}
+
+.field-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+
+/* ── Chips / pills ───────────────────────────────────────────────────────── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-2);
+  color: var(--muted);
+  background: var(--surface);
+  white-space: nowrap;
+}
+.chip .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+/* ── Band color helpers ──────────────────────────────────────────────────── */
+.band-aman {
+  color: var(--aman);
+}
+.band-mirip {
+  color: var(--mirip);
+}
+.band-sangat_mirip {
+  color: var(--sangat_mirip);
+}
+
+/* ── Misc ────────────────────────────────────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-2), transparent);
+  border: 0;
+  margin: 0;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(102, 16, 31, 0.2);
+  border-top-color: var(--brand);
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fade-enter-active,
+.fade-enter-active .card {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+/* Scrollbar (webkit) */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border-2);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #bcb49d;
+  background-clip: padding-box;
+}
+
+@media (max-width: 720px) {
+  .container {
+    padding: 0 16px;
+  }
+  .card-pad {
+    padding: 16px;
+  }
+}

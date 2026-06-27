@@ -1,0 +1,32 @@
+# ── Python (backend/) ──────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.python-version
+
+# ── Node / Vite (frontend/) ────────────────────────────────────────
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vite/
+
+# ── Rahasia / environment ──────────────────────────────────────────
+# .env asli berisi SUPABASE_SERVICE_KEY & ADMIN_KEY — JANGAN PERNAH commit.
+.env
+.env.*
+!.env.example
+
+# ── OS / editor ────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+
+# Catatan: artefak model (backend/*.pkl, backend/cluster_labels.json) SENGAJA
+# di-commit — HF Space membutuhkannya & ukurannya < 10 MB (tanpa Git LFS).
+# Korpus mentah hanya input indexer LOKAL; aktifkan baris di bawah bila tak
+# ingin menyertakannya ke Git:
+# backend/Corpus.csv
+# backend/*.xlsx
