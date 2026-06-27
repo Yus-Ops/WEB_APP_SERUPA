@@ -91,8 +91,11 @@ Tidak ada lagi upload manual: **GitHub Actions** mengirim isi `backend/` ke Spac
    `app.py`, `requirements.txt`, `Dockerfile`, `README.md`, dan **ketiga artefak**;
    `indexer.py`, korpus, & `.env` **tidak** ikut (lihat `ignore_patterns`).
 6. **Isi secret di HF Space** → Settings → Variables and secrets:
-   `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `ADMIN_KEY`,
+   `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`,
+   `SUPABASE_ANON_KEY` (verifikasi token admin; opsional — fallback ke service key),
    `FRONTEND_ORIGIN` (sementara `*`; nanti diganti domain Vercel).
+   **Akun admin:** buat di Supabase → Authentication → Users (email + password) — dipakai
+   login modal admin; `/add` kini diverifikasi token Supabase Auth, bukan `ADMIN_KEY`.
 7. Space mem-build image lalu menjalankan FastAPI di **port 7860**. URL:
    `https://<user>-<nama-space>.hf.space`. **Tes:** buka `.../health` → `{"status":"ok"}`.
 
@@ -128,7 +131,8 @@ Tidak ada lagi upload manual: **GitHub Actions** mengirim isi `backend/` ke Spac
 - `service_role` key **HANYA** di secrets HF (& `backend/.env` lokal yang gitignored).
   Jangan pernah di frontend / repo publik.
 - Frontend hanya `anon` key + RLS Supabase.
-- `/add` dilindungi `ADMIN_KEY` (gerbang korpus — hanya judul final yang masuk).
+- `/add` dilindungi **login Supabase Auth** (token diverifikasi backend) — gerbang korpus,
+  hanya judul final yang masuk. Buat akun admin di Supabase → Authentication → Users.
 - `HF_TOKEN` hanya di GitHub Secrets; tak pernah tercetak di log Action.
 
 ## Catatan konsistensi backend

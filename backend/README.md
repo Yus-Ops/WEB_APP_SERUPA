@@ -15,9 +15,10 @@ Layanan FastAPI yang meng-embed judul dan mencari kemiripan di Supabase (pgvecto
 Endpoint:
 - `GET /health` — status
 - `POST /check` `{ title, k }` — top-k judul mirip (judul, abstract, year, skor, kategori) + koordinat peta
-- `POST /add` `{ title, abstract, year }` + header `X-Admin-Key` — tambah judul (admin)
+- `POST /add` `{ title, abstract, year }` + header `Authorization: Bearer <token Supabase>` — tambah judul (admin)
 
 Konfigurasi lewat **Settings → Variables and secrets**:
-`SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `ADMIN_KEY`, `FRONTEND_ORIGIN`.
+`SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `SUPABASE_ANON_KEY` (opsional), `FRONTEND_ORIGIN`.
+`/add` diverifikasi via token Supabase Auth — buat akun admin di **Authentication → Users**.
 
 Detail arsitektur ada di `CLAUDE.md` repo utama.

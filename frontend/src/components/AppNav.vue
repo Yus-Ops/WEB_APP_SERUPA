@@ -1,10 +1,12 @@
 <script setup>
 import ModeBadge from "./ModeBadge.vue"
 
+defineEmits(["open-admin"])
+
 const links = [
-  { to: "/", label: "Cek Judul" },
+  { to: "/", label: "Beranda" },
+  { to: "/cek", label: "Cek Judul" },
   { to: "/peta", label: "Peta Tema" },
-  { to: "/admin", label: "Admin" },
 ]
 </script>
 
@@ -24,8 +26,8 @@ const links = [
           </svg>
         </span>
         <span class="brand-text">
-          <span class="brand-title">Observatorium Skripsi</span>
-          <span class="brand-sub">Kemiripan judul · satu jurusan</span>
+          <span class="brand-title">Serupa</span>
+          <span class="brand-sub">Analisis kemiripan judul · Fakultas Ilmu Keperawatan</span>
         </span>
       </RouterLink>
 
@@ -36,13 +38,35 @@ const links = [
           :to="l.to"
           class="link"
           active-class="active"
-          :exact-active-class="l.to === '/' ? 'active' : ''"
         >
           {{ l.label }}
         </RouterLink>
       </nav>
 
-      <ModeBadge />
+      <div class="nav-right">
+        <ModeBadge />
+        <button
+          class="admin-btn"
+          title="Masuk admin"
+          aria-label="Masuk admin"
+          @click="$emit('open-admin')"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="3" y="11" width="18" height="11" rx="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+        </button>
+      </div>
     </div>
   </header>
 </template>
@@ -125,6 +149,30 @@ const links = [
   height: 2px;
   border-radius: 2px;
   background: linear-gradient(90deg, var(--brand), var(--brand-2));
+}
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.admin-btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease,
+    transform 0.12s ease;
+}
+.admin-btn:hover {
+  color: var(--ink);
+  border-color: var(--accent);
+  background: var(--surface-2);
+  transform: translateY(-1px);
 }
 @media (max-width: 640px) {
   .brand-sub {

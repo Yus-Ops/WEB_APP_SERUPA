@@ -12,5 +12,6 @@ umap-learn==0.5.12
 fastapi==0.138.0
 uvicorn[standard]==0.49.0
 supabase==2.31.0
+httpx                       # verifikasi token Supabase Auth di app.py (sudah jadi dep transitif supabase)
 python-dotenv==1.2.2
 pydantic==2.13.4

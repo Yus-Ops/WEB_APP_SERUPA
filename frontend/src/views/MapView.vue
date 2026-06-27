@@ -269,7 +269,9 @@ onMounted(async () => {
 
 .layout {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  /* minmax(0, 1fr): batas-min kolom = 0 agar lebar intrinsik <canvas> tak
+     memaksa kolom melebar → memutus loop ukuran & overflow horizontal. */
+  grid-template-columns: 280px minmax(0, 1fr);
   gap: 20px;
   align-items: start;
 }
@@ -279,6 +281,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-width: 0;
 }
 .block {
   display: flex;
@@ -432,6 +435,8 @@ onMounted(async () => {
 .stage {
   position: relative;
   height: min(72vh, 680px);
+  min-width: 0;
+  overflow: hidden;
 }
 .stage :deep(.map-wrap) {
   height: 100%;

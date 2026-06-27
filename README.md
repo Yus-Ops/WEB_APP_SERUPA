@@ -1,4 +1,6 @@
-# Sistem Deteksi Kemiripan Judul Skripsi
+# Serupa — Sistem Deteksi Kemiripan Judul Skripsi
+
+> **Serupa** — analisis kemiripan judul skripsi **Fakultas Ilmu Keperawatan UNISSULA**.
 
 Satu repo GitHub, **dua bagian** yang di-deploy terpisah:
 
@@ -23,7 +25,7 @@ Sekali set, selanjutnya cukup `git push`:
    - Name: `HF_TOKEN` · Value: token tadi.
 4. **Edit** `.github/workflows/deploy-hf.yml` → ganti `HF_SPACE` jadi `username/nama-space` milikmu.
 5. **`git push`** → buka tab **Actions** di GitHub; workflow mengirim isi `backend/` ke Space.
-6. **Isi secret di HF Space** (Settings → Variables and secrets): `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `ADMIN_KEY`, `FRONTEND_ORIGIN`.
+6. **Isi secret di HF Space** (Settings → Variables and secrets): `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `SUPABASE_ANON_KEY` (opsional), `FRONTEND_ORIGIN`. Buat juga akun admin di Supabase → Authentication → Users (untuk login modal admin; `/add` diverifikasi via token Supabase Auth).
 
 > Hanya `backend/` yang dikirim ke HF. `frontend/` **tidak** ikut — lihat `ignore_patterns`
 > di workflow dan `backend/.dockerignore`. Artefak model (`*.pkl`, `cluster_labels.json`)

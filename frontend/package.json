@@ -1,9 +1,9 @@
 {
-  "name": "observatorium-skripsi-web",
+  "name": "serupa-web",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Frontend Vue 3 — Sistem deteksi kemiripan judul skripsi (Observatorium Skripsi).",
+  "description": "Serupa — analisis kemiripan judul skripsi Fakultas Ilmu Keperawatan UNISSULA (Frontend Vue 3).",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

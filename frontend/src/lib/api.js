@@ -40,14 +40,26 @@ export async function checkTitle(title, k = 10, signal) {
 }
 
 // ── /add (admin) ─────────────────────────────────────────────────────────────
-export async function addTitle(payload, adminKey) {
+// Autentikasi via token sesi Supabase Auth (bukan lagi ADMIN_KEY): backend
+// memverifikasi token ke Supabase. Lihat perbaikan §3a.
+export async function addTitle(payload) {
   if (DEMO_MODE) {
     await wait(240)
     return { inserted: [{ id: Date.now(), ...payload }], demo: true }
   }
+  let token = ""
+  if (supabase) {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+    token = session?.access_token || ""
+  }
   const r = await fetch(`${PYTHON_API}/add`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey || "" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify(payload),
   })
   if (!r.ok) throw new Error((await safeText(r)) || `Gagal menambah judul (HTTP ${r.status})`)

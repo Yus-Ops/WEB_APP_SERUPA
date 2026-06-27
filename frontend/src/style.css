@@ -1,5 +1,5 @@
 /* ============================================================================
-   Observatorium Skripsi — design system  (v2: "Atlas Tema")
+   Serupa — design system  (v2: "Atlas Tema")
    Konsep: korpus satu jurusan = atlas tema riset di atas kertas; tiap skripsi =
    sebuah titik tema; calon judulmu = titik baru yang mencari tetangga tematik
    terdekatnya. Bukan langit malam — melainkan ruang baca yang terang.
@@ -65,8 +65,10 @@
   --radius: 18px;
   --radius-sm: 12px;
 
-  --serif: "Fraunces", Georgia, "Times New Roman", serif;
-  --sans: "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  /* Lato di mana-mana. Nama --serif dipertahankan demi kompatibilitas referensi
+     lama (kini juga Lato), agar seluruh judul & teks memakai satu keluarga font. */
+  --serif: "Lato", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --sans: "Lato", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: "Spline Sans Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 
   --maxw: 1160px;
@@ -115,7 +117,7 @@ h2,
 h3,
 h4 {
   font-family: var(--serif);
-  font-weight: 600;
+  font-weight: 700; /* Lato tak punya 600; pakai 700 agar heading tetap tegas */
   line-height: 1.12;
   letter-spacing: -0.012em;
   color: var(--ink);

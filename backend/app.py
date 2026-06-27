@@ -4,7 +4,7 @@ app.py — Layanan inferensi (FastAPI).
 Endpoint:
   GET  /health                            -> status + model + dimensi + artefak
   POST /check { title, k }                -> top-k judul mirip (skor + kategori) + koordinat query
-  POST /add   { title, abstract, year }   (header X-Admin-Key)  -> tambah judul FINAL ke korpus
+  POST /add   { title, abstract, year }   (header Authorization: Bearer <token Supabase>)  -> tambah judul FINAL ke korpus
 
 Model di-load SEKALI saat startup. Jalankan di host yang mendukung ML
 (HuggingFace Space / Render / Railway / Fly.io) — BUKAN Vercel (lihat CLAUDE.md).
@@ -16,9 +16,10 @@ import json
 import os
 import pickle
 
+import httpx
 import numpy as np
 from dotenv import load_dotenv
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
@@ -35,7 +36,9 @@ CLUSTER_LABELS_PATH = "cluster_labels.json"
 
 SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
-ADMIN_KEY = os.environ["ADMIN_KEY"]
+# apikey untuk gerbang Auth Supabase saat verifikasi token admin. Fallback ke
+# service key bila SUPABASE_ANON_KEY belum diset (keduanya valid sebagai apikey).
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", SUPABASE_KEY)
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "*")
 
 # Band kategori — KALIBRASI dengan data berlabelmu (§8 CLAUDE.md).
@@ -114,6 +117,26 @@ def categorize(sim: float):
     return "aman", "Relatif aman"
 
 
+def verify_admin(authorization: str = Header(default="")):
+    """Gerbang korpus (Aturan B): verifikasi token sesi Supabase milik admin.
+    Frontend mengirim header `Authorization: Bearer <access_token>` dari Supabase Auth.
+    Mengganti skema lama X-Admin-Key (perbaikan §3a)."""
+    token = authorization.removeprefix("Bearer ").strip()
+    if not token:
+        raise HTTPException(401, "Tidak terautentikasi.")
+    try:
+        r = httpx.get(
+            f"{SUPABASE_URL}/auth/v1/user",
+            headers={"Authorization": f"Bearer {token}", "apikey": SUPABASE_ANON_KEY},
+            timeout=10,
+        )
+    except httpx.HTTPError:
+        raise HTTPException(503, "Gagal memverifikasi sesi admin.")
+    if r.status_code != 200:
+        raise HTTPException(401, "Sesi admin tidak valid atau kedaluwarsa.")
+    return r.json()  # data user Supabase
+
+
 class CheckIn(BaseModel):
     title: str
     k: int = 10
@@ -165,11 +188,8 @@ def check(body: CheckIn):
 
 
 @app.post("/add")
-def add(body: AddIn, x_admin_key: str = Header(default="")):
-    # Gerbang korpus (Aturan B): hanya admin yang boleh menambah judul final.
-    if x_admin_key != ADMIN_KEY:
-        raise HTTPException(401, "Admin key salah.")
-
+def add(body: AddIn, user: dict = Depends(verify_admin)):
+    # Gerbang korpus (Aturan B): hanya admin terautentikasi (Supabase) yang lolos.
     title = body.title.strip()
     if len(title) < 5:
         raise HTTPException(400, "Judul terlalu pendek (min 5 karakter).")

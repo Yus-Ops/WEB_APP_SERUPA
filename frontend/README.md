@@ -1,4 +1,4 @@
-# frontend/ — Observatorium Skripsi (Frontend Vue 3)
+# frontend/ — Serupa (Frontend Vue 3)
 
 Frontend untuk sistem deteksi kemiripan judul skripsi. Lihat `../CLAUDE.md` untuk
 arsitektur keseluruhan. Stack: **Vite + Vue 3 + Vue Router + @supabase/supabase-js**.
@@ -45,11 +45,12 @@ src/
 │   ├── SimilarityGauge.vue   # busur SVG 270° (signature, Fitur 1)
 │   ├── CorpusMap.vue         # peta konstelasi canvas (signature, Fitur 2)
 │   ├── MatchList.vue / MatchCard.vue
+│   ├── AdminModal.vue        # gerbang korpus: login Supabase + tambah judul (modal)
 │   ├── AppNav.vue / ModeBadge.vue
 └── views/
+    ├── LandingView.vue # halaman depan: hero, cara pakai, fitur, FAQ
     ├── CheckView.vue   # cek judul + gauge real-time (Fitur 1)
-    ├── MapView.vue     # peta korpus interaktif (Fitur 2)
-    └── AdminView.vue   # gerbang korpus: login + tambah judul (/add)
+    └── MapView.vue     # peta korpus interaktif (Fitur 2)
 ```
 
 ## Build produksi (untuk Vercel)
