@@ -30,6 +30,9 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'NIM harus berupa angka (min. 6 digit).' })
     }
     if (!emailRe.test(email)) return res.status(400).json({ error: 'Format email tidak valid.' })
+    if (!email.endsWith('@std.unissula.ac.id')) {
+      return res.status(400).json({ error: 'Wajib email kampus @std.unissula.ac.id.' })
+    }
     if (!fullName) return res.status(400).json({ error: 'Nama lengkap wajib diisi.' })
     if (password.length < 6) {
       return res.status(400).json({ error: 'Kata sandi minimal 6 karakter.' })

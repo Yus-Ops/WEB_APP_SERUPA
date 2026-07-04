@@ -30,11 +30,15 @@ const points = [
 ]
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const CAMPUS_DOMAIN = 'std.unissula.ac.id'
 
 function validate() {
   errors.fullName = form.fullName.trim() ? '' : 'Nama lengkap wajib diisi.'
   errors.nim = /^\d{6,}$/.test(form.nim.trim()) ? '' : 'NIM harus berupa angka (min. 6 digit).'
-  errors.email = emailRe.test(form.email.trim()) ? '' : 'Format email tidak valid.'
+  const email = form.email.trim().toLowerCase()
+  if (!emailRe.test(email)) errors.email = 'Format email tidak valid.'
+  else if (!email.endsWith('@' + CAMPUS_DOMAIN)) errors.email = `Wajib email kampus @${CAMPUS_DOMAIN}.`
+  else errors.email = ''
   errors.password = form.password.length >= 6 ? '' : 'Kata sandi minimal 6 karakter.'
   errors.confirm = form.confirm === form.password ? '' : 'Konfirmasi kata sandi tidak cocok.'
   return !Object.values(errors).some(Boolean)
@@ -61,9 +65,10 @@ async function submit() {
       router.push({ name: 'scan' })
     }
   } catch (e) {
-    if (e.code === 'nim_taken') errors.nim = e.message
-    else if (e.code === 'email_taken') errors.email = e.message
-    else errors.email = e.message
+    console.error('[register]', e)
+    const msg = e && typeof e.message === 'string' && e.message ? e.message : 'Registrasi gagal. Coba lagi.'
+    if (e?.code === 'nim_taken') errors.nim = msg
+    else errors.email = msg
   } finally {
     loading.value = false
   }
@@ -137,7 +142,7 @@ function backToForm() {
             label="Email Kampus"
             placeholder="nama@std.unissula.ac.id"
             autocomplete="email"
-            hint="Kode verifikasi (OTP) dikirim ke sini."
+            hint="Wajib email kampus @std.unissula.ac.id. OTP dikirim ke sini."
             :error="errors.email"
             required
           />
