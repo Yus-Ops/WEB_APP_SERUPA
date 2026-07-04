@@ -32,7 +32,7 @@ function validate() {
   errors.summary =
     form.summary.trim().length >= 30
       ? ''
-      : 'Ringkasan minimal 30 karakter (2–4 kalimat) agar makna topik terbaca utuh.'
+      : 'Ringkasan minimal 30 karakter (2–4 kalimat) agar topik Anda jelas.'
   return !errors.title && !errors.summary
 }
 
@@ -72,14 +72,14 @@ function reset() {
     <aside class="scan__aside">
       <div class="scan__card">
         <div class="scan__cardHead">
-          <h2 class="scan__cardTitle">Rencana Topik</h2>
-          <p class="scan__cardSub">Isi judul dan ringkasan, lalu jalankan analisis.</p>
+          <h2 class="scan__cardTitle">Rencana Topik Skripsi</h2>
+          <p class="scan__cardSub">Tulis judul dan ringkasan rencana Anda, lalu klik cek.</p>
         </div>
 
         <form class="scan__form" novalidate @submit.prevent="submit">
           <AppInput
             v-model="form.title"
-            label="Judul rencana"
+            label="Judul rencana skripsi"
             placeholder="mis. Pengaruh terapi musik terhadap kecemasan pasien pre-operasi"
             :error="errors.title"
             required
@@ -87,10 +87,10 @@ function reset() {
           <AppTextarea
             v-model="form.summary"
             label="Ringkasan rencana"
-            placeholder="Jelaskan singkat: masalah, intervensi/variabel, populasi, dan setting penelitian (2–4 kalimat)."
+            placeholder="Ceritakan singkat (2–4 kalimat): apa masalahnya, apa yang Anda teliti/lakukan, pada siapa, dan di mana."
             :rows="5"
             :error="errors.summary"
-            hint="Ringkasan membuat query setara kaya dengan abstrak korpus — kunci akurasi kemiripan."
+            hint="Makin lengkap ceritanya, makin tepat hasilnya — seperti menjelaskan topik ke teman."
             show-count
             required
           />
@@ -99,9 +99,13 @@ function reset() {
             <svg class="scan__chev" :class="{ 'is-open': showPico }" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M7 5l5 5-5 5" />
             </svg>
-            PICO terstruktur <span class="scan__opt">(opsional)</span>
+            Rincian PICO <span class="scan__opt">(opsional)</span>
           </button>
           <div v-if="showPico" class="scan__pico">
+            <p class="scan__picoHelp">
+              Boleh dikosongkan. Isi bila ingin memerinci topik: siapa yang diteliti, apa yang
+              dilakukan, dibandingkan apa, hasil yang diukur, dan di mana.
+            </p>
             <AppInput v-model="pico.populasi" label="Populasi" placeholder="mis. lansia hipertensi" />
             <AppInput v-model="pico.intervensi" label="Intervensi" placeholder="mis. senam ergonomik" />
             <AppInput v-model="pico.pembanding" label="Pembanding" placeholder="mis. perawatan standar" />
@@ -113,10 +117,10 @@ function reset() {
 
           <div class="scan__actions">
             <AppButton type="submit" variant="primary" size="lg" block :loading="loading">
-              {{ loading ? 'Menganalisis…' : 'Analisis kemiripan' }}
+              {{ loading ? 'Memeriksa…' : 'Cek kemiripan' }}
             </AppButton>
             <AppButton v-if="result" type="button" variant="ghost" size="md" block @click="reset">
-              Scan baru
+              Cek rencana lain
             </AppButton>
           </div>
         </form>
@@ -128,7 +132,7 @@ function reset() {
       <!-- Loading -->
       <div v-if="loading" class="scan__loading">
         <AppSpinner :size="32" />
-        <p>Menghitung kemiripan makna terhadap ±2.000 skripsi…</p>
+        <p>Membandingkan rencana Anda dengan ±2.000 skripsi FIK…</p>
       </div>
 
       <!-- Hasil -->
@@ -146,7 +150,7 @@ function reset() {
         <ScanDisclaimer />
 
         <div class="scan__queryRecap">
-          <p class="scan__recapLabel">Rencana yang dianalisis</p>
+          <p class="scan__recapLabel">Rencana yang Anda cek</p>
           <p class="scan__recapTitle">{{ result.input.title }}</p>
           <p class="scan__recapSummary">{{ result.input.summary }}</p>
         </div>
@@ -160,15 +164,15 @@ function reset() {
       <div v-else class="scan__intro">
         <EmptyState
           icon="search"
-          title="Mulai analisis rencana topik Anda"
-          message="Hasil akan muncul di sini: skor kemiripan, judul, penulis, tahun, dan abstrak penelitian termirip — untuk Anda tinjau bersama pembimbing."
+          title="Mulai cek rencana topik Anda"
+          message="Hasilnya muncul di sini: daftar skripsi yang paling mirip beserta skor, penulis, tahun, dan abstraknya — untuk Anda diskusikan bersama pembimbing."
         />
         <div class="scan__tips">
-          <h3 class="scan__tipsTitle">Agar hasil akurat</h3>
+          <h3 class="scan__tipsTitle">Tips agar hasil tepat</h3>
           <ul class="scan__tipsList">
-            <li><strong>Tulis ringkasan yang jelas.</strong> Sebutkan intervensi, populasi, dan outcome — bukan hanya judul.</li>
-            <li><strong>Gunakan istilah spesifik.</strong> “Senam kaki diabetik” lebih baik daripada “olahraga”.</li>
-            <li><strong>Skor tinggi ≠ ditolak.</strong> Itu sinyal untuk ditinjau lebih teliti, bukan vonis.</li>
+            <li><strong>Tulis ringkasan yang jelas.</strong> Ceritakan apa yang diteliti dan pada siapa — jangan hanya judul.</li>
+            <li><strong>Pakai istilah spesifik.</strong> “Senam kaki diabetik” lebih baik daripada “olahraga”.</li>
+            <li><strong>Skor tinggi bukan berarti ditolak.</strong> Itu tanda untuk ditinjau lebih teliti, bukan keputusan akhir.</li>
           </ul>
         </div>
       </div>
@@ -238,6 +242,12 @@ function reset() {
   padding: var(--space-4);
   background: var(--color-primary-050);
   border-radius: var(--radius-md);
+}
+.scan__picoHelp {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  line-height: var(--leading-normal);
+  margin-bottom: 2px;
 }
 .scan__actions {
   display: flex;

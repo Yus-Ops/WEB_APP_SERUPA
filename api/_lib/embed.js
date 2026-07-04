@@ -23,7 +23,12 @@ const EMBED_NORMALIZE = (process.env.EMBED_NORMALIZE || 'true') !== 'false'
 export const MODEL_VERSION = EMBED_MODEL
 
 function endpointUrl() {
-  return EMBED_ENDPOINT_URL || `https://api-inference.huggingface.co/models/${EMBED_MODEL}`
+  const url = EMBED_ENDPOINT_URL || `https://api-inference.huggingface.co/models/${EMBED_MODEL}`
+  // Kemudahan: bila EMBED_ENDPOINT_URL menunjuk ROOT HF Space (tanpa path),
+  // tambahkan '/embed' otomatis — endpoint embedding Space ada di POST /embed.
+  // (Mencegah error 405 "Method Not Allowed" saat POST ke root yang GET-only.)
+  if (/\.hf\.space\/*$/.test(url)) return url.replace(/\/+$/, '') + '/embed'
+  return url
 }
 
 function arrayDepth(a) {

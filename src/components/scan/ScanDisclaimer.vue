@@ -17,9 +17,9 @@ defineProps({
       </svg>
     </span>
     <p class="disclaimer__text">
-      Skor adalah <strong>indikator kemiripan makna</strong>, bukan vonis duplikasi. Dua penelitian
-      bisa mirip secara teks namun tetap berbeda (populasi, lokasi, atau desain). Keputusan akhir
-      ada pada <strong>Anda dan pembimbing</strong>.
+      Skor menunjukkan <strong>seberapa mirip makna topik</strong>, bukan tuduhan menjiplak. Dua
+      penelitian bisa terlihat mirip tapi tetap berbeda (populasi, lokasi, atau cara penelitian).
+      Keputusan akhir ada pada <strong>Anda dan pembimbing</strong>.
     </p>
   </aside>
 </template>
