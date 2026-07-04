@@ -76,8 +76,8 @@ async function submit() {
 
 async function verify() {
   otpError.value = ''
-  if (!/^\d{6}$/.test(otp.code.trim())) {
-    otpError.value = 'Masukkan 6 digit kode dari email.'
+  if (!/^\d{4,10}$/.test(otp.code.trim())) {
+    otpError.value = 'Masukkan kode dari email.'
     return
   }
   otpLoading.value = true
@@ -142,7 +142,6 @@ function backToForm() {
             label="Email Kampus"
             placeholder="nama@std.unissula.ac.id"
             autocomplete="email"
-            hint="Wajib email kampus @std.unissula.ac.id. OTP dikirim ke sini."
             :error="errors.email"
             required
           />
@@ -183,15 +182,15 @@ function backToForm() {
     <div v-else class="reg">
       <h1 class="reg__title">Verifikasi email</h1>
       <p class="reg__sub">
-        Kami mengirim kode 6 digit ke <strong class="reg__mail">{{ otp.email }}</strong>. Masukkan
-        kode itu untuk mengaktifkan akun.
+        Kami mengirim kode verifikasi ke <strong class="reg__mail">{{ otp.email }}</strong>.
+        Masukkan kode itu untuk mengaktifkan akun.
       </p>
 
       <form class="reg__form" novalidate @submit.prevent="verify">
         <AppInput
           v-model="otp.code"
           label="Kode OTP"
-          placeholder="000000"
+          placeholder="Kode dari email"
           inputmode="numeric"
           autocomplete="one-time-code"
           :error="otpError"
