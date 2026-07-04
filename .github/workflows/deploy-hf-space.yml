@@ -1,0 +1,37 @@
+name: Deploy Embedding Space ke Hugging Face
+
+# Menyinkronkan folder hf-space/ ke sebuah HF Space (Docker) setiap kali
+# berkas Space berubah di branch main, atau dijalankan manual.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'hf-space/**'
+      - '.github/workflows/deploy-hf-space.yml'
+      - '.github/scripts/push_to_hf_space.py'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-hf-space
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install huggingface_hub
+        run: pip install "huggingface_hub>=0.25"
+
+      - name: Push hf-space/ ke HF Space
+        env:
+          # Secret: token HF dengan izin WRITE (Settings → Secrets → Actions).
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          # Variable: id Space, mis. "namauser/serupa-embed" (Settings → Variables).
+          HF_SPACE_ID: ${{ vars.HF_SPACE_ID }}
+        run: python .github/scripts/push_to_hf_space.py

@@ -1,0 +1,22 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.env
+.env.*
+!.env.example
+_mock_seed.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python (hf-space/ & scripts)
+__pycache__/
+*.pyc
+.venv/
+
+# CSV hasil konversi (dihasilkan dari Corpus.csv)
+theses_import.csv

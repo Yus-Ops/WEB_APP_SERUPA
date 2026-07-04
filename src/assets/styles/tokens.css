@@ -1,0 +1,107 @@
+/* =========================================================================
+   Serupa — Design Tokens (PRD §7.3)
+   Sumber kebenaran untuk warna, tipografi, radius, dan spacing.
+   ========================================================================= */
+:root {
+  /* -- Merek (teal) -- */
+  --color-primary-050: #edf6f3;
+  --color-primary-100: #d8eae5;
+  --color-primary-200: #b9d6cf;
+  --color-primary-300: #9bc4bb;
+  --color-primary: #79aea3;
+  --color-primary-600: #5e9488;
+  --color-primary-700: #3e7268; /* teks/tautan/tombol aman (WCAG AA) */
+  --color-primary-800: #2c5249;
+
+  /* -- Aksen hangat -- */
+  --color-accent: #f4a261;
+  --color-accent-600: #e08a45;
+  --color-accent-050: #fdefdd;
+
+  /* -- Semantik -- */
+  --color-success: #2f8f5b;
+  --color-success-bg: #e4f3ea;
+  --color-warning: #b7791f;
+  --color-warning-bg: #fbf0da;
+  --color-danger: #c0453a;
+  --color-danger-bg: #f8e4e1;
+  --color-info: #3e7ca8;
+  --color-info-bg: #e3eff6;
+
+  /* -- Netral -- */
+  --color-text: #24302e;
+  --color-text-muted: #5b6764;
+  --color-text-subtle: #869390;
+  --color-border: #e2e9e7;
+  --color-surface: #ffffff;
+  --color-background: #f6faf9;
+
+  /* -- Pita kemiripan (hindari merah — D1) -- */
+  --band-rendah-text: #2f8f5b;
+  --band-rendah-bg: #e4f3ea;
+  --band-sedang-text: #b7791f;
+  --band-sedang-bg: #fbf0da;
+  --band-tinggi-text: #9a5b14;
+  --band-tinggi-bg: #f5e2c4;
+
+  /* -- Tipografi -- */
+  --font-family-base: 'Lato', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-bold: 700;
+  --font-weight-black: 900;
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  --text-3xl: 36px;
+  --text-display: 48px;
+
+  --leading-tight: 1.2;
+  --leading-normal: 1.6;
+
+  /* -- Radius -- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+
+  /* -- Spacing (skala 4px) -- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* -- Elevasi (bayangan lembut, kesan bersih) -- */
+  --shadow-xs: 0 1px 2px rgba(44, 82, 73, 0.06);
+  --shadow-sm: 0 1px 3px rgba(44, 82, 73, 0.08), 0 1px 2px rgba(44, 82, 73, 0.04);
+  --shadow-md: 0 4px 12px rgba(44, 82, 73, 0.08), 0 2px 4px rgba(44, 82, 73, 0.04);
+  --shadow-lg: 0 12px 28px rgba(44, 82, 73, 0.12), 0 4px 8px rgba(44, 82, 73, 0.05);
+  --shadow-focus: 0 0 0 3px rgba(121, 174, 163, 0.35);
+
+  /* -- Layout -- */
+  --container-max: 1160px;
+  --sidebar-width: 264px;
+  --navbar-height: 68px;
+
+  /* -- Transisi -- */
+  --transition-fast: 0.12s ease;
+  --transition-base: 0.2s ease;
+
+  /* -- Z-index -- */
+  --z-sticky: 100;
+  --z-overlay: 900;
+  --z-modal: 1000;
+  --z-toast: 1100;
+}

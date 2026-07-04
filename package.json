@@ -1,0 +1,27 @@
+{
+  "name": "serupa",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Serupa — Sistem Analisis Kemiripan Judul Skripsi (FIK UNISSULA). Frontend-first, mock data.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prepare:csv": "node scripts/prepare-theses-csv.mjs",
+    "import:corpus": "node scripts/import-corpus.mjs",
+    "embed:corpus": "node scripts/embed-corpus.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "pinia": "^2.3.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "dotenv": "^16.4.5",
+    "puppeteer-core": "^25.3.0",
+    "vite": "^5.4.11"
+  }
+}
