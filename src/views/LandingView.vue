@@ -1,21 +1,61 @@
 <script setup>
-import { computed } from 'vue'
 import PublicNavbar from '@/components/layout/PublicNavbar.vue'
 import PublicFooter from '@/components/layout/PublicFooter.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import ResultCard from '@/components/scan/ResultCard.vue'
 import BandBadge from '@/components/ui/BandBadge.vue'
-import { analyze } from '@/lib/similarity'
 import { formatScore } from '@/lib/format'
 
-// Contoh hasil (FL5) — dihitung mesin kemiripan nyata agar demo konsisten.
-const demoQuery = {
-  title: 'Efektivitas Senam Kaki terhadap Kadar Gula Darah Pasien Diabetes Melitus',
-  summary:
-    'Intervensi latihan fisik untuk menurunkan glukosa darah sewaktu pada penderita diabetes melitus tipe 2 yang menjalani rawat inap.',
-}
-const demoResults = analyze(demoQuery, { topN: 3 })
-const demoTop = computed(() => demoResults[0])
+// Contoh hasil (FL5) — data ilustrasi statis (bentuk mengikuti kontrak §11.2)
+// agar landing publik tak bergantung pada backend/scan yang butuh login.
+const demoResults = [
+  {
+    rank: 1,
+    score: 0.86,
+    band: 'Tinggi',
+    thesis: {
+      id: 't003',
+      title:
+        'Efektivitas Senam Kaki Diabetik terhadap Penurunan Kadar Glukosa Darah Sewaktu (GDS) pada Pasien Diabetes Melitus Tipe II',
+      author: 'Desy Rihandika Risnawati',
+      year: 2015,
+      abstract:
+        'Latar belakang: Kadar glukosa darah pada pasien diabetes melitus tipe II cenderung tinggi akibat kelainan sekresi maupun kerja insulin serta kurangnya aktivitas fisik. Penelitian ini bertujuan mengetahui perbedaan nilai GDS sebelum dan sesudah senam kaki diabetik antara kelompok perlakuan dan kelompok kontrol. Metode: Quasy experiment dengan rancangan pretest-posttest with control group.',
+      sourceUrl: 'https://repository.unissula.ac.id/thesis/t003',
+    },
+  },
+  {
+    rank: 2,
+    score: 0.68,
+    band: 'Sedang',
+    thesis: {
+      id: 't018',
+      title:
+        'Pengaruh Relaksasi Otogenik terhadap Penurunan Kadar Glukosa Darah Sewaktu (GDS) pada Pasien Diabetes Melitus Tipe II',
+      author: 'Andi Mukarrama',
+      year: 2015,
+      abstract:
+        'Latar belakang: Studi pendahuluan menemukan rata-rata kadar glukosa darah sewaktu pasien diabetes melitus tipe II yang menjalani rawat inap berkisar 200–400 mg/dl. Relaksasi otogenik diduga dapat membantu menurunkan kadar glukosa darah.',
+      sourceUrl: 'https://repository.unissula.ac.id/thesis/t018',
+    },
+  },
+  {
+    rank: 3,
+    score: 0.57,
+    band: 'Rendah',
+    thesis: {
+      id: 't024',
+      title:
+        'Hubungan Konsumsi Makanan Tinggi Kolesterol dengan Kejadian Penyakit Jantung Koroner Berulang',
+      author: 'Laila Hidayatul Hikmah',
+      year: 2017,
+      abstract:
+        'Latar belakang: Penyakit jantung koroner adalah penyumbatan arteri koronaria akibat aterosklerosis yang dipicu pola hidup tidak sehat, di antaranya konsumsi makanan tinggi kolesterol.',
+      sourceUrl: 'https://repository.unissula.ac.id/thesis/t024',
+    },
+  },
+]
+const demoTop = demoResults[0]
 
 const steps = [
   {
@@ -145,7 +185,7 @@ const limits = [
             sendiri apakah perbedaan populasi atau metode membuat topik Anda tetap layak.
           </p>
           <p class="section__demoHint">
-            Contoh di samping dihitung langsung oleh mesin kemiripan Serupa.
+            Contoh ilustrasi tampilan hasil analisis kemiripan.
           </p>
         </div>
         <div class="section__demoCard">

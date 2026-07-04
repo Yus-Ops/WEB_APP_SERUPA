@@ -1,5 +1,5 @@
 <script setup>
-import { topicTrends, saturationMap } from '@/data/mockTheses'
+import { topicTrends, saturationMap } from '@/data/sampleAnalytics'
 import TrendChart from '@/components/charts/TrendChart.vue'
 import SaturationBars from '@/components/charts/SaturationBars.vue'
 </script>
@@ -12,12 +12,18 @@ import SaturationBars from '@/components/charts/SaturationBars.vue'
         Bagaimana fokus penelitian bergeser antar tahun, dan subbidang mana yang sudah padat.
         Membantu mengarahkan mahasiswa ke celah riset yang masih jarang.
       </p>
+      <p class="trends__hint">
+        <span class="tag">contoh</span>
+        Panel di halaman ini masih memakai data ilustratif — menunggu modul analitik klaster
+        embedding. Statistik korpus lain (jumlah record, kelengkapan abstrak, distribusi tahun)
+        di dashboard sudah live.
+      </p>
     </header>
 
     <section class="panel">
       <div class="panel__head">
         <div>
-          <h3 class="panel__title">Tren Kelompok Topik per Tahun</h3>
+          <h3 class="panel__title">Tren Kelompok Topik per Tahun <span class="tag">contoh</span></h3>
           <p class="panel__note">Jumlah skripsi per klaster tema. Klik legenda untuk menyaring.</p>
         </div>
       </div>
@@ -26,7 +32,7 @@ import SaturationBars from '@/components/charts/SaturationBars.vue'
 
     <div class="trends__grid">
       <section class="panel">
-        <h3 class="panel__title">Peta Saturasi Subbidang</h3>
+        <h3 class="panel__title">Peta Saturasi Subbidang <span class="tag">contoh</span></h3>
         <p class="panel__note trends__mb">Berdasarkan kepadatan klaster embedding korpus.</p>
         <SaturationBars :data="saturationMap" />
       </section>
@@ -57,6 +63,27 @@ import SaturationBars from '@/components/charts/SaturationBars.vue'
   color: var(--color-text-muted);
   margin-top: 2px;
   max-width: 68ch;
+}
+.trends__hint {
+  margin-top: var(--space-3);
+  max-width: 68ch;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: var(--leading-normal);
+}
+.tag {
+  display: inline-block;
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-subtle);
+  background: var(--color-primary-050);
+  border: 1px solid var(--color-border);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  vertical-align: middle;
+  margin-right: var(--space-2);
 }
 .panel {
   background: var(--color-surface);

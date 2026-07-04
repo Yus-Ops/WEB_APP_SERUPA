@@ -90,7 +90,17 @@ language sql stable security definer set search_path = public as $$
     'missingAbstract', count(*) filter (where length(coalesce(abstract,'')) <= 40),
     'suspiciousYear',  count(*) filter (where year is null or year < 1990 or year > extract(year from now())),
     'firstYear',       min(year),
-    'lastYear',        max(year)
+    'lastYear',        max(year),
+    'lastIndexed',     to_char(max(created_at), 'YYYY-MM-DD'),
+    'perYear',         coalesce((
+      select json_agg(json_build_object('year', y, 'count', c) order by y)
+      from (
+        select year as y, count(*) as c
+        from public.theses
+        where year is not null
+        group by year
+      ) yr
+    ), '[]'::json)
   )
   from public.theses;
 $$;

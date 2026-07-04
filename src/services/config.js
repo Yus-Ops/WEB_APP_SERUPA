@@ -1,46 +1,35 @@
 /**
- * Serupa — konfigurasi sumber data (frontend-first, PRD §3).
+ * Serupa — konfigurasi backend (PRD §3, §8).
  *
- * SATU sakelar menentukan dari mana data diambil:
- *   - `mock` (default): semuanya lokal (localStorage + mesin kemiripan TF-IDF).
- *     App berjalan penuh TANPA backend — untuk demo & pengembangan UI.
- *   - `live`: Supabase (Auth + Postgres/pgvector) & Hugging Face (embedding)
- *     lewat Vercel Serverless Functions. Lihat INTEGRATION.md.
+ * Aplikasi berjalan SEPENUHNYA di atas backend nyata:
+ *   - Supabase (Auth + Postgres/pgvector) untuk identitas, korpus, & riwayat.
+ *   - Hugging Face (embedding) via Vercel Serverless Functions untuk scan.
  *
- * Ganti mode via variabel lingkungan build-time `VITE_DATA_MODE`.
- * Semua kunci sensitif (service role, token HF) HANYA di server, tidak di sini.
+ * Tidak ada lagi mode mock/localStorage. Semua kunci sensitif (service role,
+ * token HF) HANYA di server, tidak pernah di berkas ini. Lihat INTEGRATION.md.
  */
 const env = import.meta.env
-
-export const DATA_MODE = (env.VITE_DATA_MODE || 'mock').toLowerCase()
-export const isLive = DATA_MODE === 'live'
-export const isMock = !isLive
 
 // Kredensial publik Supabase (anon key aman dibawa ke browser; RLS yang menjaga).
 export const SUPABASE_URL = env.VITE_SUPABASE_URL || ''
 export const SUPABASE_ANON_KEY = env.VITE_SUPABASE_ANON_KEY || ''
 
-// Pemetaan NIM → email internal untuk Supabase Auth (PRD §8, D6).
-// Login mahasiswa: `{nim}@{domain}`. Email asli tetap dicatat untuk pemulihan.
-export const STUDENT_EMAIL_DOMAIN = env.VITE_STUDENT_EMAIL_DOMAIN || 'std.unissula.ac.id'
-
 // Endpoint serverless untuk scan (embedding + pencarian pgvector).
 export const SCAN_API_URL = env.VITE_SCAN_API_URL || '/api/scan'
 
-/** True bila mode live tetapi konfigurasi Supabase belum lengkap. */
-export const liveMisconfigured = isLive && (!SUPABASE_URL || !SUPABASE_ANON_KEY)
+// Endpoint serverless untuk daftar & masuk. Login pakai NIM di-resolve ke email
+// akun di server (email kampus asli tak diekspos ke browser). Lihat api/login.js.
+export const REGISTER_API_URL = env.VITE_REGISTER_API_URL || '/api/register'
+export const LOGIN_API_URL = env.VITE_LOGIN_API_URL || '/api/login'
 
-if (liveMisconfigured) {
-  // Tidak melempar error: biarkan UI memberi pesan yang ramah saat aksi dijalankan.
+/** True bila konfigurasi Supabase publik sudah lengkap. */
+export const supabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY)
+
+if (!supabaseConfigured) {
+  // Tidak melempar error di sini: biarkan UI memberi pesan ramah saat aksi
+  // dijalankan (getSupabase() akan menjelaskan bila belum dikonfigurasi).
   console.warn(
-    '[Serupa] VITE_DATA_MODE=live tetapi VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY belum diisi. ' +
-      'Lihat .env.example & INTEGRATION.md.',
+    '[Serupa] VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY belum diisi. ' +
+      'Aplikasi memerlukan backend Supabase. Lihat .env.example & INTEGRATION.md.',
   )
-}
-
-/** Ubah NIM (atau email) menjadi email login Supabase. */
-export function nimToEmail(identifier) {
-  const id = String(identifier || '').trim()
-  if (!id) return ''
-  return id.includes('@') ? id.toLowerCase() : `${id.toLowerCase()}@${STUDENT_EMAIL_DOMAIN}`
 }

@@ -16,7 +16,7 @@ const { ordered, loading } = storeToRefs(scans)
 
 const pendingDelete = ref(null)
 
-onMounted(() => scans.seedIfEmpty())
+onMounted(() => scans.ensureLoaded())
 
 async function confirmDelete() {
   if (!pendingDelete.value) return

@@ -5,8 +5,7 @@
  * RLS di server yang menentukan baris mana yang boleh dibaca/ditulis tiap user.
  * Kunci SERVICE ROLE tidak pernah ada di sini — hanya di Serverless Functions.
  *
- * Klien dibuat malas (lazy) & hanya saat mode live, sehingga build/mode mock
- * tidak pernah menyentuhnya.
+ * Klien dibuat malas (lazy) — hanya diinisialisasi saat pertama dibutuhkan.
  */
 import { createClient } from '@supabase/supabase-js'
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/services/config'

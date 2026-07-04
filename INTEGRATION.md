@@ -1,27 +1,29 @@
 # Panduan Integrasi — Supabase & Hugging Face
 
-Dokumen ini adalah **langkah demi langkah** menyambungkan frontend Serupa (yang
-sekarang berjalan penuh di atas data mock) ke backend nyata: **Supabase**
-(Auth + Postgres/pgvector) dan **Hugging Face** (model embedding), diorkestrasi
-oleh **Vercel Serverless Functions**. Sesuai arsitektur PRD §8 dan roadmap Fase 3.
+Dokumen ini adalah **langkah demi langkah** menyambungkan frontend Serupa ke
+backend nyata: **Supabase** (Auth + Postgres/pgvector) dan **Hugging Face**
+(model embedding), diorkestrasi oleh **Vercel Serverless Functions**. Sesuai
+arsitektur PRD §8 dan roadmap Fase 3.
 
-> **Prinsip:** frontend tidak berubah cara pakainya. Sebuah sakelar tunggal
-> `VITE_DATA_MODE` memilih `mock` (default) atau `live`. Semua kode integrasi
-> hidup di lapisan `src/services/`, `api/`, `supabase/`, dan `scripts/`.
+> **Prinsip:** aplikasi berjalan **sepenuhnya live** — tanpa mode mock. Semua
+> kode integrasi hidup di lapisan `src/services/`, `api/`, `supabase/`, dan
+> `scripts/`; frontend cukup diberi variabel lingkungan yang benar.
 
 ---
 
 ## 0. Peta perubahan (apa yang sudah disiapkan)
 
 ```
-src/services/            ← LAPISAN SERVICE (seam mock ↔ live)
-  config.js              ← sakelar VITE_DATA_MODE + env publik + nimToEmail()
-  authService.js         ← login/daftar/logout (mock localStorage | Supabase Auth)
-  corpusService.js       ← CRUD korpus (mock | tabel theses)
-  scanService.js         ← scan & riwayat (mock TF-IDF | /api/scan + Supabase)
-src/lib/supabase.js      ← klien Supabase browser (anon key, lazy, mode live)
+src/services/            ← LAPISAN SERVICE (semua ke backend live)
+  config.js              ← env publik (Supabase URL/anon) + endpoint API
+  authService.js         ← daftar/masuk/OTP (via /api/register, /api/login) + logout
+  corpusService.js       ← CRUD korpus (tabel theses) + stats (corpus_stats)
+  scanService.js         ← scan & riwayat (/api/scan + Supabase)
+src/lib/supabase.js      ← klien Supabase browser (anon key, lazy)
 
 api/                     ← VERCEL SERVERLESS (kunci rahasia hidup di sini)
+  register.js            ← POST /api/register: cek NIM + signUp (kirim OTP email)
+  login.js               ← POST /api/login: NIM → email → sign-in (balas token sesi)
   scan.js                ← POST /api/scan: auth → embed HF → pgvector → simpan
   health.js              ← GET  /api/health: cek konfigurasi env
   _lib/embed.js          ← pemanggil embedding Hugging Face (bge-m3)
@@ -42,8 +44,9 @@ scripts/
 vercel.json              ← rewrites SPA (kecuali /api) + durasi fungsi scan
 ```
 
-Belum yakin bagian mana yang diubah frontend? Semua tetap **kompatibel mundur**:
-tanpa `.env`, aplikasi jalan di mode `mock` persis seperti sebelumnya.
+> **Penting:** aplikasi kini **memerlukan** backend. Tanpa `VITE_SUPABASE_URL` &
+> `VITE_SUPABASE_ANON_KEY`, login/scan/korpus tidak berfungsi (UI memberi pesan
+> ramah, bukan crash).
 
 ---
 
@@ -77,13 +80,19 @@ dan seluruh kebijakan RLS.
 > **Dimensi vektor** default `1024` untuk `BAAI/bge-m3`. Bila mengganti model,
 > sesuaikan `vector(1024)` di `01_schema.sql` **dan** `EMBED_DIM`.
 
-### A.3 Pengaturan Auth (penting untuk login NIM)
-Login memakai NIM yang dipetakan ke email internal `{nim}@std.unissula.ac.id`
-(PRD §8). Email internal ini tidak menerima surat, jadi:
+### A.3 Pengaturan Auth (verifikasi OTP ke email kampus)
+Mahasiswa mendaftar dengan **email kampus asli** (mis. `nama@std.unissula.ac.id`)
+— itulah email akun. Login tetap pakai **NIM** (di-resolve ke email di server oleh
+`/api/login`, email tak diekspos ke browser). Verifikasi email pakai **OTP 6 digit**:
 
-- **Authentication → Providers → Email**: **matikan "Confirm email"**
-  (Confirm email = OFF). Tanpa ini, akun NIM tak bisa diaktifkan.
-- Biarkan **Email/Password** provider aktif.
+- **Authentication → Providers → Email**: **Confirm email = ON**, provider
+  Email/Password tetap aktif.
+- **Authentication → Email Templates → "Confirm signup"**: ubah isinya agar
+  menampilkan kode `{{ .Token }}` (bukan hanya link). Mis. *"Kode verifikasi Anda:
+  `{{ .Token }}`"*.
+- **Authentication → SMTP Settings**: sambungkan **SMTP kustom** (Resend / Brevo /
+  SendGrid — gratis untuk volume kecil). SMTP bawaan Supabase dibatasi ~beberapa
+  email/jam (uji coba) dan tidak cukup untuk banyak mahasiswa.
 
 ### A.4 Ambil kunci API
 **Project Settings → API**, salin:
@@ -161,10 +170,8 @@ Isi **semua** nilai berikut (Production + Preview):
 
 | Variabel | Contoh / sumber | Terpapar ke browser? |
 |---|---|---|
-| `VITE_DATA_MODE` | `live` | ya (publik) |
 | `VITE_SUPABASE_URL` | Project URL | ya |
 | `VITE_SUPABASE_ANON_KEY` | anon key | ya |
-| `VITE_STUDENT_EMAIL_DOMAIN` | `std.unissula.ac.id` | ya |
 | `SUPABASE_URL` | Project URL | **tidak** |
 | `SUPABASE_ANON_KEY` | anon key | **tidak** |
 | `SUPABASE_SERVICE_ROLE_KEY` | service_role secret | **tidak (RAHASIA)** |
@@ -266,27 +273,26 @@ Redeploy Vercel, lalu jalankan `npm run embed:corpus` (memakai Space yang sama).
 
 ## 6. Membuat akun admin
 
-Admin dibuat dengan mendaftarkan user lalu menaikkan perannya:
+Admin tidak bisa mendaftar sendiri (form /daftar selalu `role = student`). Buat manual:
 
-1. Daftar lewat halaman **/daftar** (atau Supabase → Authentication → Add user).
-2. Di SQL Editor, jadikan admin:
+1. **Supabase → Authentication → Add user**: isi **email** admin (mis. email
+   koordinator), set **password**, centang **Auto Confirm User** (admin tak perlu OTP).
+2. Di **SQL Editor**, set peran + NIM login admin:
    ```sql
-   update public.profiles set role = 'admin'
-   where nim = 'NIM_ATAU_IDENTITAS_ADMIN';
+   update public.profiles
+   set role = 'admin', nim = 'admin', full_name = 'Koordinator Skripsi FIK'
+   where id = (select id from auth.users where email = 'EMAIL_ADMIN');
    ```
-   (Atau berdasarkan email: `where email = 'koordinator@unissula.ac.id'`.)
-
-Untuk admin, login memakai NIM/identitas yang sama seperti saat daftar. Bila
-admin ingin login dengan email penuh, ketik email itu di kolom NIM — pemetaan
-`nimToEmail()` meneruskan apa adanya bila mengandung `@`.
+   `nim` bebas (mis. `admin`) — itulah yang diketik admin saat login.
+3. **Login** di /masuk: NIM = `admin` (nilai yang kamu set) + password tadi.
+   `/api/login` menerjemahkan NIM → email → sign-in.
 
 ---
 
-## 7. Aktifkan mode live secara lokal (opsional, untuk uji dev)
+## 7. Menjalankan secara lokal (opsional, untuk uji dev)
 
 ```bash
 # .env
-VITE_DATA_MODE=live
 VITE_SUPABASE_URL=...
 VITE_SUPABASE_ANON_KEY=...
 ```
@@ -303,9 +309,10 @@ untuk menguji scan live secara lokal.
 
 ## 8. Uji end-to-end (live)
 
-1. **/daftar** → buat akun mahasiswa (NIM, email asli, kata sandi).
-   → Cek tabel `profiles` terisi otomatis (trigger).
-2. **/masuk** → login dengan NIM + kata sandi.
+1. **/daftar** → isi NIM, **email kampus asli**, kata sandi → **Daftar & Kirim Kode**.
+   → Cek email → masukkan **kode OTP 6 digit** → akun aktif & langsung masuk.
+   → Cek tabel `profiles` terisi otomatis (trigger; `email` = email kampus).
+2. **/masuk** → login dengan **NIM** + kata sandi (lewat `/api/login`).
 3. **Cek Rencana Topik** → isi judul + ringkasan → **Analisis kemiripan**.
    → `/api/scan` meng-embed query, mencari pgvector, menyimpan hasil.
 4. **Riwayat Scan** → scan tadi muncul; buka detailnya.
@@ -315,18 +322,21 @@ untuk menguji scan live secara lokal.
 
 ---
 
-## 9. Peta kontrak & titik ganti (ringkas)
+## 9. Peta kontrak (ringkas)
 
-| Kebutuhan frontend | Mock | Live |
-|---|---|---|
-| Login/daftar | localStorage | Supabase Auth (`authService`) |
-| Korpus (CRUD) | localStorage + seed | tabel `theses` (`corpusService`) |
-| Scan | TF-IDF lokal (`lib/similarity`) | `POST /api/scan` (HF + pgvector) |
-| Riwayat | localStorage | tabel `scans`/`scan_results` |
-| Bentuk hasil | kontrak §11.2 | kontrak §11.2 (identik) |
+| Kebutuhan frontend | Sumber live |
+|---|---|
+| Daftar (OTP) | `/api/register` → signUp + `verifyOtp` (`authService`) |
+| Masuk (NIM) | `/api/login` → NIM→email→sign-in di server (`authService`) |
+| Korpus (CRUD) | tabel `theses` (`corpusService`) |
+| Ringkasan korpus | RPC `corpus_stats()` (`corpusService.stats`) |
+| Scan | `POST /api/scan` (HF + pgvector) |
+| Riwayat | tabel `scans`/`scan_results` |
+| Bentuk hasil | kontrak §11.2 (`{ rank, score, band, thesis:{…} }`) |
 
-Karena bentuk data identik (`{ rank, score, band, thesis:{…} }`), komponen UI
-(`ResultCard`, `BandBadge`, dst.) tidak perlu diubah saat beralih mode.
+Catatan: panel **Saturasi Subbidang** & **Tren Topik** di admin masih memakai
+data contoh (`src/data/sampleAnalytics.js`) karena butuh modul analitik klaster
+embedding yang belum ada endpoint-nya — sudah ditandai "contoh" di UI.
 
 ---
 
@@ -348,7 +358,10 @@ Karena bentuk data identik (`{ rank, score, band, thesis:{…} }`), komponen UI
 | Gejala | Kemungkinan sebab & solusi |
 |---|---|
 | `/api/health` flag `false` | Env belum diisi/di-redeploy di Vercel. |
-| Login gagal terus | "Confirm email" masih ON (A.3), atau NIM→email tak cocok. |
+| Login: "Email belum diverifikasi" | Mahasiswa belum menyelesaikan OTP. Daftar ulang NIM sama → kode dikirim ulang, lalu verifikasi. |
+| OTP tidak sampai ke email | SMTP kustom belum diset / kena rate limit SMTP bawaan (A.3); cek folder spam. |
+| Email berisi link, bukan kode | Ubah template "Confirm signup" agar memakai `{{ .Token }}` (A.3). |
+| Login: "NIM atau kata sandi tidak cocok" | NIM belum terdaftar / salah sandi, atau `/api/login` tak jalan (butuh `vercel dev` saat lokal). |
 | Scan: *"Model HF sedang dimuat"* | Cold-start Inference API; ulangi, atau pakai Endpoint privat. |
 | Scan: *"Dimensi embedding tak sesuai"* | `EMBED_DIM` ≠ dimensi model / kolom `vector(N)`. Samakan. |
 | Hasil scan kosong | `thesis_embeddings` belum terisi → jalankan `embed:corpus`; pastikan `EMBED_MODEL` sama saat embed & scan. |
@@ -362,12 +375,12 @@ Karena bentuk data identik (`{ rank, score, band, thesis:{…} }`), komponen UI
 
 ## 12. Checklist
 
-- [ ] `01/02/03_*.sql` dijalankan di Supabase
-- [ ] "Confirm email" = OFF
+- [ ] `01/02/03_*.sql` dijalankan di Supabase (jalankan ulang `02` untuk `corpus_stats` terbaru)
+- [ ] "Confirm email" = ON + template "Confirm signup" pakai `{{ .Token }}` + SMTP kustom
 - [ ] `.env` lokal terisi (server keys + HF)
 - [ ] `npm run import:corpus` sukses (`theses` terisi)
 - [ ] `npm run embed:corpus` sukses (`thesis_embeddings` ≈ jumlah theses)
-- [ ] Env Vercel lengkap + `VITE_DATA_MODE=live` + redeploy
+- [ ] Env Vercel lengkap (Supabase + HF) + redeploy
 - [ ] `/api/health` semua `true`
 - [ ] Uji end-to-end (daftar → login → scan → riwayat) lolos
 - [ ] Minimal satu akun `admin` dibuat

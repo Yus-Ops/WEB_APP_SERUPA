@@ -32,3 +32,13 @@ export function userClient(accessToken) {
     auth: { persistSession: false, autoRefreshToken: false },
   })
 }
+
+export function anonClient() {
+  if (!URL || !ANON_KEY) {
+    throw new Error('SUPABASE_URL / SUPABASE_ANON_KEY belum diset.')
+  }
+  // Anon murni (tanpa JWT) untuk sign-up / sign-in atas nama pengguna dari server.
+  return createClient(URL, ANON_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+}

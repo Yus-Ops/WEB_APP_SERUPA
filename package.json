@@ -2,7 +2,7 @@
   "name": "serupa",
   "version": "0.2.0",
   "private": true,
-  "description": "Serupa — Sistem Analisis Kemiripan Judul Skripsi (FIK UNISSULA). Frontend-first, mock data.",
+  "description": "Serupa — Sistem Analisis Kemiripan Judul Skripsi (FIK UNISSULA). Supabase + Hugging Face.",
   "type": "module",
   "scripts": {
     "dev": "vite",

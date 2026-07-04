@@ -1,19 +1,16 @@
 import { defineStore } from 'pinia'
-import { isLive } from '@/services/config'
 import scanService from '@/services/scanService'
 
 /**
  * Riwayat scan mahasiswa (FM4, PRD §9). Persistensi & pencocokan berada di
- * `scanService` (mock: TF-IDF + localStorage; live: /api/scan + Supabase).
- * Store menyimpan daftar reaktif + status muat.
- *
- * Mode mock diinisialisasi sinkron dari localStorage (tanpa kedip); mode live
- * memuat via `ensureLoaded()` yang dipanggil saat halaman riwayat dibuka.
+ * `scanService` (/api/scan untuk analisis + Supabase untuk riwayat). Store
+ * menyimpan daftar reaktif + status muat; riwayat dimuat via `ensureLoaded()`
+ * saat halaman riwayat dibuka.
  */
 export const useScansStore = defineStore('scans', {
   state: () => ({
     scans: scanService.snapshot(),
-    loaded: !isLive,
+    loaded: false,
     loading: false,
   }),
   getters: {
@@ -44,12 +41,6 @@ export const useScansStore = defineStore('scans', {
     async clearAll() {
       await scanService.clearAll()
       this.scans = []
-    },
-    async seedIfEmpty() {
-      await this.ensureLoaded()
-      if (this.scans.length) return
-      const seeded = await scanService.seedIfEmpty()
-      if (seeded) this.scans = seeded
     },
   },
 })

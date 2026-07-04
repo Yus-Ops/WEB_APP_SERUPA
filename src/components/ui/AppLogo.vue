@@ -1,34 +1,30 @@
 <script setup>
 /**
- * Logo Serupa — mark SVG (dua bentuk bertumpang tindih = kemiripan/overlap)
- * plus wordmark. SVG agar tajam di segala ukuran & konsisten di light/dark.
+ * Logo Serupa — memakai berkas gambar asli (`public/logo-mark.png`, hasil potong
+ * ikon dari `logo.png`) sebagai marka, ditambah wordmark teks agar tajam & bisa
+ * menyesuaikan warna di latar terang/gelap (`light`).
+ *
+ *   variant='full' → ikon + tulisan "Serupa"
+ *   variant='mark' → ikon saja
+ *   light          → wordmark putih untuk latar gelap
  */
 defineProps({
   variant: { type: String, default: 'full' }, // full | mark
-  light: { type: Boolean, default: false }, // wordmark putih untuk latar gelap
+  light: { type: Boolean, default: false },
   size: { type: Number, default: 32 },
 })
 </script>
 
 <template>
   <span class="logo" :class="{ 'logo--light': light }">
-    <svg
+    <img
       class="logo__mark"
+      src="/logo-mark.png"
       :width="size"
       :height="size"
-      viewBox="0 0 40 40"
-      role="img"
-      aria-label="Serupa"
-    >
-      <rect x="0" y="0" width="40" height="40" rx="11" fill="var(--color-primary-700)" />
-      <circle cx="16" cy="20" r="8.5" fill="#fff" fill-opacity="0.92" />
-      <circle cx="24" cy="20" r="8.5" fill="var(--color-accent)" fill-opacity="0.9" />
-      <path
-        d="M20 12.9a8.5 8.5 0 0 1 0 14.2 8.5 8.5 0 0 1 0-14.2z"
-        fill="var(--color-primary-800)"
-        fill-opacity="0.55"
-      />
-    </svg>
+      :alt="variant === 'full' ? '' : 'Serupa'"
+      decoding="async"
+    />
     <span v-if="variant === 'full'" class="logo__word">Serupa</span>
   </span>
 </template>
@@ -42,7 +38,13 @@ defineProps({
 .logo__mark {
   display: block;
   flex-shrink: 0;
-  border-radius: 11px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 9px;
+  box-shadow: 0 1px 2px rgba(16, 44, 38, 0.1);
+}
+.logo--light .logo__mark {
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.18);
 }
 .logo__word {
   font-weight: var(--font-weight-black);

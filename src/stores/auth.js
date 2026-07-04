@@ -2,8 +2,8 @@ import { defineStore } from 'pinia'
 import authService from '@/services/authService'
 
 /**
- * Sesi & identitas pengguna. Logika autentikasi (mock localStorage ATAU Supabase
- * Auth) berada di `authService`; store hanya menyimpan `user` reaktif + guard.
+ * Sesi & identitas pengguna. Logika autentikasi (Supabase Auth) berada di
+ * `authService`; store hanya menyimpan `user` reaktif + guard.
  * Lihat PRD §8 (pemetaan NIM → email) dan INTEGRATION.md.
  */
 export const useAuthStore = defineStore('auth', {
@@ -25,8 +25,18 @@ export const useAuthStore = defineStore('auth', {
       return this.user
     },
     async register(payload) {
-      this.user = await authService.register(payload)
+      // Mengembalikan { needsVerification, email? , user? }. User hanya di-set
+      // bila verifikasi tidak diperlukan (Confirm email OFF).
+      const result = await authService.register(payload)
+      if (result.user) this.user = result.user
+      return result
+    },
+    async verifyOtp(payload) {
+      this.user = await authService.verifyOtp(payload)
       return this.user
+    },
+    async resendOtp(payload) {
+      return authService.resendOtp(payload)
     },
     async logout() {
       await authService.logout()

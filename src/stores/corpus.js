@@ -1,19 +1,18 @@
 import { defineStore } from 'pinia'
-import { isLive } from '@/services/config'
 import corpusService from '@/services/corpusService'
 
 /**
  * Korpus skripsi yang dikelola admin (FA2/FA3, PRD §9). Persistensi berada di
- * `corpusService` (mock: localStorage; live: tabel `theses` Supabase — menulis
- * hanya untuk admin karena RLS). Store menyimpan daftar reaktif + status muat.
+ * `corpusService` (tabel `theses` Supabase — menulis hanya untuk admin karena
+ * RLS). Store menyimpan daftar reaktif + status muat.
  *
- * Statistik korpus penuh (±2.244) ditampilkan terpisah di dashboard admin;
- * daftar ini adalah data yang dapat disunting.
+ * Statistik korpus penuh (±2.244) ditampilkan terpisah di dashboard admin
+ * (RPC corpus_stats); daftar ini adalah data yang dapat disunting.
  */
 export const useCorpusStore = defineStore('corpus', {
   state: () => ({
     items: corpusService.snapshot(),
-    loaded: !isLive,
+    loaded: false,
     loading: false,
   }),
   getters: {
@@ -51,9 +50,6 @@ export const useCorpusStore = defineStore('corpus', {
     async remove(id) {
       await corpusService.remove(id)
       this.items = this.items.filter((t) => t.id !== id)
-    },
-    async reset() {
-      this.items = await corpusService.reset()
     },
     /** Deteksi judul duplikat dalam korpus yang dimuat (FA2 validasi batch). */
     findDuplicateTitle(title) {

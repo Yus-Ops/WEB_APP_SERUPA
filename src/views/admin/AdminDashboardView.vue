@@ -1,19 +1,43 @@
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
-import { corpusStats, saturationMap } from '@/data/mockTheses'
+import corpusService from '@/services/corpusService'
+import { saturationMap } from '@/data/sampleAnalytics'
 import { formatNumber, pct } from '@/lib/format'
 import BarChart from '@/components/charts/BarChart.vue'
 import SaturationBars from '@/components/charts/SaturationBars.vue'
 
-const abstractPct = computed(() => pct(corpusStats.withAbstract, corpusStats.totalRecords))
+// Model embedding aktif (dikonfigurasi di server via EMBED_MODEL). Ditampilkan
+// sebagai info; frontend tidak memegang kredensial/HF.
+const MODEL_VERSION = 'BAAI/bge-m3'
+
+const stats = ref(null)
+const loading = ref(true)
+const error = ref('')
+
+onMounted(async () => {
+  try {
+    stats.value = await corpusService.stats()
+  } catch (e) {
+    error.value = e.message || 'Gagal memuat statistik korpus.'
+  } finally {
+    loading.value = false
+  }
+})
+
+const s = computed(() => stats.value || {})
+const abstractPct = computed(() => pct(s.value.withAbstract || 0, s.value.totalRecords || 0))
+const perYear = computed(() => s.value.perYear || [])
+const yearRange = computed(() =>
+  s.value.firstYear && s.value.lastYear ? `${s.value.firstYear}–${s.value.lastYear}` : '—',
+)
 
 const tiles = computed(() => [
-  { label: 'Total record', value: formatNumber(corpusStats.totalRecords), sub: 'skripsi di korpus' },
-  { label: 'Ber-abstrak', value: `${abstractPct.value}%`, sub: `${formatNumber(corpusStats.withAbstract)} record`, tone: 'success' },
-  { label: 'Tanpa abstrak', value: formatNumber(corpusStats.missingAbstract), sub: 'perlu dilengkapi', tone: 'warning' },
-  { label: 'Tahun janggal', value: formatNumber(corpusStats.suspiciousYear), sub: 'perlu diverifikasi', tone: 'warning' },
-  { label: 'Rentang tahun', value: `${corpusStats.firstYear}–${corpusStats.lastYear}`, sub: 'cakupan korpus' },
+  { label: 'Total record', value: formatNumber(s.value.totalRecords || 0), sub: 'skripsi di korpus' },
+  { label: 'Ber-abstrak', value: `${abstractPct.value}%`, sub: `${formatNumber(s.value.withAbstract || 0)} record`, tone: 'success' },
+  { label: 'Tanpa abstrak', value: formatNumber(s.value.missingAbstract || 0), sub: 'perlu dilengkapi', tone: 'warning' },
+  { label: 'Tahun janggal', value: formatNumber(s.value.suspiciousYear || 0), sub: 'perlu diverifikasi', tone: 'warning' },
+  { label: 'Rentang tahun', value: yearRange.value, sub: 'cakupan korpus' },
 ])
 </script>
 
@@ -23,71 +47,83 @@ const tiles = computed(() => [
       <div>
         <h2 class="dash__title">Ringkasan Korpus</h2>
         <p class="dash__sub">
-          Kondisi data ±{{ formatNumber(corpusStats.totalRecords) }} skripsi FIK UNISSULA.
-          Terakhir diindeks {{ corpusStats.lastIndexed }}.
+          Kondisi data korpus skripsi FIK UNISSULA.
+          <template v-if="s.lastIndexed"> Terakhir diindeks {{ s.lastIndexed }}.</template>
         </p>
       </div>
-      <span class="dash__model">Model: {{ corpusStats.modelVersion }}</span>
+      <span class="dash__model">Model: {{ MODEL_VERSION }}</span>
     </header>
 
-    <!-- Stat tiles -->
-    <div class="tiles">
-      <div v-for="t in tiles" :key="t.label" class="tile" :class="t.tone && `tile--${t.tone}`">
-        <p class="tile__label">{{ t.label }}</p>
-        <p class="tile__value">{{ t.value }}</p>
-        <p class="tile__sub">{{ t.sub }}</p>
-      </div>
+    <p v-if="loading" class="dash__state">Memuat statistik korpus…</p>
+
+    <div v-else-if="error" class="dash__state dash__state--error">
+      <p>{{ error }}</p>
+      <p class="dash__stateHint">
+        Pastikan Supabase terkonfigurasi dan RPC <code>corpus_stats()</code> sudah dijalankan
+        (lihat INTEGRATION.md).
+      </p>
     </div>
 
-    <div class="dash__grid">
-      <!-- Kualitas data -->
-      <section class="panel">
-        <h3 class="panel__title">Kualitas Data</h3>
-        <div class="quality">
-          <div class="quality__row">
-            <div class="quality__labels">
-              <span>Kelengkapan abstrak</span>
-              <strong>{{ abstractPct }}%</strong>
-            </div>
-            <div class="quality__track">
-              <div class="quality__fill" :style="{ width: abstractPct + '%' }" />
-            </div>
-            <p class="quality__note">
-              {{ formatNumber(corpusStats.missingAbstract) }} record belum memiliki abstrak — sinyal
-              semantiknya lemah hingga dilengkapi.
-            </p>
-          </div>
-          <div class="quality__flags">
-            <div class="flag">
-              <span class="flag__dot flag__dot--warn" />
-              <span>{{ corpusStats.suspiciousYear }} record bertahun janggal / kosong</span>
-            </div>
-            <div class="flag">
-              <span class="flag__dot flag__dot--ok" />
-              <span>{{ formatNumber(corpusStats.withAbstract) }} record siap di-embed</span>
-            </div>
-          </div>
+    <template v-else>
+      <!-- Stat tiles -->
+      <div class="tiles">
+        <div v-for="t in tiles" :key="t.label" class="tile" :class="t.tone && `tile--${t.tone}`">
+          <p class="tile__label">{{ t.label }}</p>
+          <p class="tile__value">{{ t.value }}</p>
+          <p class="tile__sub">{{ t.sub }}</p>
         </div>
-      </section>
+      </div>
 
-      <!-- Saturasi teaser -->
+      <div class="dash__grid">
+        <!-- Kualitas data -->
+        <section class="panel">
+          <h3 class="panel__title">Kualitas Data</h3>
+          <div class="quality">
+            <div class="quality__row">
+              <div class="quality__labels">
+                <span>Kelengkapan abstrak</span>
+                <strong>{{ abstractPct }}%</strong>
+              </div>
+              <div class="quality__track">
+                <div class="quality__fill" :style="{ width: abstractPct + '%' }" />
+              </div>
+              <p class="quality__note">
+                {{ formatNumber(s.missingAbstract || 0) }} record belum memiliki abstrak — sinyal
+                semantiknya lemah hingga dilengkapi.
+              </p>
+            </div>
+            <div class="quality__flags">
+              <div class="flag">
+                <span class="flag__dot flag__dot--warn" />
+                <span>{{ formatNumber(s.suspiciousYear || 0) }} record bertahun janggal / kosong</span>
+              </div>
+              <div class="flag">
+                <span class="flag__dot flag__dot--ok" />
+                <span>{{ formatNumber(s.withAbstract || 0) }} record siap di-embed</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Saturasi teaser (data contoh) -->
+        <section class="panel">
+          <div class="panel__head">
+            <h3 class="panel__title">Saturasi Subbidang <span class="tag">contoh</span></h3>
+            <RouterLink :to="{ name: 'admin-trends' }" class="panel__link">Lihat tren →</RouterLink>
+          </div>
+          <SaturationBars :data="saturationMap.slice(0, 5)" />
+        </section>
+      </div>
+
+      <!-- Distribusi tahun -->
       <section class="panel">
         <div class="panel__head">
-          <h3 class="panel__title">Saturasi Subbidang</h3>
-          <RouterLink :to="{ name: 'admin-trends' }" class="panel__link">Lihat tren →</RouterLink>
+          <h3 class="panel__title">Distribusi Record per Tahun</h3>
+          <span class="panel__note">Jumlah skripsi masuk korpus tiap tahun</span>
         </div>
-        <SaturationBars :data="saturationMap.slice(0, 5)" />
+        <BarChart :data="perYear" :format-value="formatNumber" />
       </section>
-    </div>
-
-    <!-- Distribusi tahun -->
-    <section class="panel">
-      <div class="panel__head">
-        <h3 class="panel__title">Distribusi Record per Tahun</h3>
-        <span class="panel__note">Jumlah skripsi masuk korpus tiap tahun</span>
-      </div>
-      <BarChart :data="corpusStats.perYear" :format-value="formatNumber" />
-    </section>
+    </template>
   </div>
 </template>
 
@@ -116,6 +152,41 @@ const tiles = computed(() => [
   padding: 6px 12px;
   border-radius: var(--radius-full);
   white-space: nowrap;
+}
+.dash__state {
+  padding: var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-muted);
+}
+.dash__state--error {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+.dash__stateHint {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+.dash__stateHint code {
+  font-size: 0.9em;
+  background: var(--color-primary-050);
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+}
+.tag {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-subtle);
+  background: var(--color-primary-050);
+  border: 1px solid var(--color-border);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  vertical-align: middle;
+  margin-left: var(--space-2);
 }
 
 .tiles {

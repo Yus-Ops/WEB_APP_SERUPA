@@ -13,8 +13,8 @@ const pinia = createPinia()
 
 app.use(pinia)
 
-// Pulihkan sesi (mock: localStorage; live: Supabase) SEBELUM guard router jalan,
-// lalu pasang router & mount. restore() kini async untuk mendukung mode live.
+// Pulihkan sesi Supabase SEBELUM guard router jalan, lalu pasang router & mount.
+// restore() async & gagal-aman: bila backend belum siap, aplikasi tetap ter-mount.
 useAuthStore()
   .restore()
   .catch(() => {})
