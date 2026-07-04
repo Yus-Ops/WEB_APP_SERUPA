@@ -110,7 +110,7 @@ function reset() {
             <AppInput v-model="pico.intervensi" label="Intervensi" placeholder="mis. senam ergonomik" />
             <AppInput v-model="pico.pembanding" label="Pembanding" placeholder="mis. perawatan standar" />
             <AppInput v-model="pico.outcome" label="Outcome" placeholder="mis. tekanan darah" />
-            <AppInput v-model="pico.setting" label="Setting" placeholder="mis. puskesmas" />
+            <AppInput v-model="pico.setting" label="Tempat" placeholder="mis. puskesmas" />
           </div>
 
           <AppSelect v-model="form.topN" label="Jumlah hasil" :options="topNOptions" />

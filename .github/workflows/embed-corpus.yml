@@ -1,0 +1,41 @@
+name: Embed Korpus ke Supabase
+
+# Menghitung embedding korpus (judul+abstrak) lewat HF Space, lalu menyimpannya
+# ke tabel thesis_embeddings di Supabase — SEMUA di cloud (bukan laptop).
+#
+# Jalankan MANUAL dari tab Actions setelah tabel `theses` terisi. Idempoten:
+# hanya meng-embed judul yang BELUM punya vektor, jadi aman diulang / dilanjutkan.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: embed-corpus
+  cancel-in-progress: false
+
+jobs:
+  embed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Embed korpus → thesis_embeddings
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          # URL HF Space (mis. https://<user>-serupa-embed.hf.space/embed).
+          EMBED_ENDPOINT_URL: ${{ secrets.EMBED_ENDPOINT_URL }}
+          EMBED_MODEL: BAAI/bge-m3
+          EMBED_DIM: '1024'
+          # Batch kecil agar Space CPU (free) tidak timeout.
+          EMBED_BATCH: '16'
+        run: npm run embed:corpus
