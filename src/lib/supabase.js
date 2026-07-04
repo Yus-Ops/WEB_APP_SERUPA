@@ -24,6 +24,10 @@ export function getSupabase() {
       persistSession: true,
       autoRefreshToken: true,
       storageKey: 'serupa.supabase.auth',
+      // Sesi disimpan per-TAB (sessionStorage), bukan localStorage: otomatis
+      // hilang saat tab/browser ditutup dan TIDAK ikut ke tab baru → membuka
+      // tab/web baru wajib login lagi (lebih aman untuk data usulan mahasiswa).
+      storage: window.sessionStorage,
     },
   })
   return client
