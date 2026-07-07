@@ -19,7 +19,8 @@ const STUDENT_NAV = [
   { name: 'history', label: 'Riwayat Scan', icon: 'history' },
 ]
 const ADMIN_NAV = [
-  { name: 'admin-dashboard', label: 'Dashboard', icon: 'grid' },
+  // `exact`: route indeks (/admin) — cocokkan persis agar tak ikut aktif di sub-halaman.
+  { name: 'admin-dashboard', label: 'Dashboard', icon: 'grid', exact: true },
   { name: 'admin-corpus', label: 'Korpus Skripsi', icon: 'list' },
   { name: 'admin-upload', label: 'Unggah Data', icon: 'upload' },
   { name: 'admin-trends', label: 'Tren & Saturasi', icon: 'chart' },
@@ -71,13 +72,20 @@ async function logout() {
           v-for="item in nav"
           :key="item.name"
           :to="{ name: item.name }"
-          class="navitem"
-          active-class="is-active"
+          custom
+          v-slot="{ href, navigate, isActive, isExactActive }"
         >
-          <svg class="navitem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <path :d="icons[item.icon]" />
-          </svg>
-          {{ item.label }}
+          <a
+            :href="href"
+            class="navitem"
+            :class="{ 'is-active': item.exact ? isExactActive : isActive }"
+            @click="navigate"
+          >
+            <svg class="navitem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path :d="icons[item.icon]" />
+            </svg>
+            {{ item.label }}
+          </a>
         </RouterLink>
       </nav>
 
