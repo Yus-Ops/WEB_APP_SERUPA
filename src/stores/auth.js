@@ -4,7 +4,7 @@ import authService from '@/services/authService'
 /**
  * Sesi & identitas pengguna. Logika autentikasi (Supabase Auth) berada di
  * `authService`; store hanya menyimpan `user` reaktif + guard.
- * Lihat PRD §8 (pemetaan NIM → email) dan INTEGRATION.md.
+ * Pemetaan NIM → email dilakukan di server (/api/login). Lihat README.md.
  */
 export const useAuthStore = defineStore('auth', {
   state: () => ({ user: null }),

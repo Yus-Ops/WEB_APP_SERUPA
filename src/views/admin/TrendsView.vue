@@ -1,7 +1,23 @@
 <script setup>
-import { topicTrends, saturationMap } from '@/data/sampleAnalytics'
+import { computed, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useCorpusStore } from '@/stores/corpus'
+import { buildTopicAnalytics } from '@/lib/topics'
 import TrendChart from '@/components/charts/TrendChart.vue'
 import SaturationBars from '@/components/charts/SaturationBars.vue'
+
+const corpus = useCorpusStore()
+const { items, loading } = storeToRefs(corpus)
+onMounted(() => corpus.ensureLoaded())
+
+const analytics = computed(() => buildTopicAnalytics(items.value))
+const topicTrends = computed(() => analytics.value.topicTrends)
+const saturationMap = computed(() => analytics.value.saturationMap)
+const matchedPct = computed(() => analytics.value.matchedPct)
+const yearSpan = computed(() => {
+  const y = analytics.value.coveredYears
+  return y.length ? `${y[0]}–${y[y.length - 1]}` : '—'
+})
 </script>
 
 <template>
@@ -13,18 +29,23 @@ import SaturationBars from '@/components/charts/SaturationBars.vue'
         Membantu mengarahkan mahasiswa ke celah riset yang masih jarang.
       </p>
       <p class="trends__hint">
-        <span class="tag">contoh</span>
-        Panel di halaman ini masih memakai data ilustratif — menunggu modul analitik klaster
-        embedding. Statistik korpus lain (jumlah record, kelengkapan abstrak, distribusi tahun)
-        di dashboard sudah live.
+        Dihitung langsung dari korpus dengan pencocokan kata kunci pada judul &amp; abstrak
+        ({{ matchedPct }}% record terklasifikasi). Ini perkiraan berbasis kata kunci, bukan klaster
+        makna — skripsi bertema di luar daftar kata kunci belum terhitung, dan satu skripsi bisa
+        masuk lebih dari satu subbidang.
       </p>
     </header>
 
+    <p v-if="loading" class="trends__state">Memuat korpus untuk analisis…</p>
+
+    <template v-else>
     <section class="panel">
       <div class="panel__head">
         <div>
-          <h3 class="panel__title">Tren Kelompok Topik per Tahun <span class="tag">contoh</span></h3>
-          <p class="panel__note">Jumlah skripsi per klaster tema. Klik legenda untuk menyaring.</p>
+          <h3 class="panel__title">Tren Kelompok Topik per Tahun</h3>
+          <p class="panel__note">
+            Jumlah skripsi 5 subbidang teratas per tahun ({{ yearSpan }}). Klik legenda untuk menyaring.
+          </p>
         </div>
       </div>
       <TrendChart :data="topicTrends" />
@@ -32,8 +53,8 @@ import SaturationBars from '@/components/charts/SaturationBars.vue'
 
     <div class="trends__grid">
       <section class="panel">
-        <h3 class="panel__title">Peta Saturasi Subbidang <span class="tag">contoh</span></h3>
-        <p class="panel__note trends__mb">Berdasarkan kepadatan klaster embedding korpus.</p>
+        <h3 class="panel__title">Peta Saturasi Subbidang</h3>
+        <p class="panel__note trends__mb">Jumlah skripsi per subbidang di seluruh korpus.</p>
         <SaturationBars :data="saturationMap" />
       </section>
 
@@ -49,6 +70,7 @@ import SaturationBars from '@/components/charts/SaturationBars.vue'
         </ul>
       </aside>
     </div>
+    </template>
   </div>
 </template>
 
@@ -70,6 +92,13 @@ import SaturationBars from '@/components/charts/SaturationBars.vue'
   font-size: var(--text-sm);
   color: var(--color-text-muted);
   line-height: var(--leading-normal);
+}
+.trends__state {
+  padding: var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-muted);
 }
 .tag {
   display: inline-block;

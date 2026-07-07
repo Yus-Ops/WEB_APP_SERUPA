@@ -40,14 +40,26 @@ function throwIf(error) {
 
 export default {
   snapshot: () => [],
+  /**
+   * Ambil SELURUH korpus. PostgREST membatasi tiap response ke `max-rows`
+   * (default 1000), jadi kita paginasi dengan `.range()` sampai habis —
+   * tahan bila korpus tumbuh melebihi batas server (bukan sekadar `.limit()`).
+   */
   async list() {
-    const { data, error } = await (await db())
-      .from('theses')
-      .select('id, title, author, year, abstract, prodi, source_url, created_at')
-      .order('created_at', { ascending: false })
-      .limit(5000)
-    throwIf(error)
-    return (data || []).map(fromRow)
+    const client = await db()
+    const PAGE = 1000
+    const rows = []
+    for (let from = 0; ; from += PAGE) {
+      const { data, error } = await client
+        .from('theses')
+        .select('id, title, author, year, abstract, prodi, source_url, created_at')
+        .order('created_at', { ascending: false })
+        .range(from, from + PAGE - 1)
+      throwIf(error)
+      rows.push(...(data || []))
+      if (!data || data.length < PAGE) break
+    }
+    return rows.map(fromRow)
   },
   /** Ringkasan korpus untuk dashboard admin (RPC corpus_stats, FA4). */
   async stats() {

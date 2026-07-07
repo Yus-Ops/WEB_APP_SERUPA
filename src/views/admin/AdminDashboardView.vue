@@ -1,11 +1,18 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import corpusService from '@/services/corpusService'
-import { saturationMap } from '@/data/sampleAnalytics'
+import { useCorpusStore } from '@/stores/corpus'
+import { buildTopicAnalytics } from '@/lib/topics'
 import { formatNumber, pct } from '@/lib/format'
 import BarChart from '@/components/charts/BarChart.vue'
 import SaturationBars from '@/components/charts/SaturationBars.vue'
+
+const corpus = useCorpusStore()
+const { items: corpusItems } = storeToRefs(corpus)
+onMounted(() => corpus.ensureLoaded())
+const saturationMap = computed(() => buildTopicAnalytics(corpusItems.value).saturationMap)
 
 // Model embedding aktif (dikonfigurasi di server via EMBED_MODEL). Ditampilkan
 // sebagai info; frontend tidak memegang kredensial/HF.
@@ -60,7 +67,7 @@ const tiles = computed(() => [
       <p>{{ error }}</p>
       <p class="dash__stateHint">
         Pastikan Supabase terkonfigurasi dan RPC <code>corpus_stats()</code> sudah dijalankan
-        (lihat INTEGRATION.md).
+        (lihat README.md).
       </p>
     </div>
 
@@ -88,8 +95,8 @@ const tiles = computed(() => [
                 <div class="quality__fill" :style="{ width: abstractPct + '%' }" />
               </div>
               <p class="quality__note">
-                {{ formatNumber(s.missingAbstract || 0) }} record belum memiliki abstrak — sinyal
-                semantiknya lemah hingga dilengkapi.
+                {{ formatNumber(s.missingAbstract || 0) }} record belum memiliki abstrak — tetap
+                di-embed dari judul, tapi sinyal semantiknya lemah hingga abstrak dilengkapi.
               </p>
             </div>
             <div class="quality__flags">
@@ -99,7 +106,7 @@ const tiles = computed(() => [
               </div>
               <div class="flag">
                 <span class="flag__dot flag__dot--ok" />
-                <span>{{ formatNumber(s.withAbstract || 0) }} record siap di-embed</span>
+                <span>{{ formatNumber(s.withAbstract || 0) }} record ber-abstrak lengkap (sinyal semantik kuat)</span>
               </div>
             </div>
           </div>
@@ -108,7 +115,7 @@ const tiles = computed(() => [
         <!-- Saturasi teaser (data contoh) -->
         <section class="panel">
           <div class="panel__head">
-            <h3 class="panel__title">Saturasi Subbidang <span class="tag">contoh</span></h3>
+            <h3 class="panel__title">Saturasi Subbidang</h3>
             <RouterLink :to="{ name: 'admin-trends' }" class="panel__link">Lihat tren →</RouterLink>
           </div>
           <SaturationBars :data="saturationMap.slice(0, 5)" />

@@ -16,7 +16,7 @@ export function getSupabase() {
   if (client) return client
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     throw new Error(
-      'Supabase belum dikonfigurasi. Isi VITE_SUPABASE_URL & VITE_SUPABASE_ANON_KEY (lihat INTEGRATION.md).',
+      'Supabase belum dikonfigurasi. Isi VITE_SUPABASE_URL & VITE_SUPABASE_ANON_KEY (lihat README.md).',
     )
   }
   client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {

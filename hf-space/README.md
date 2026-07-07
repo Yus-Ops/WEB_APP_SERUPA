@@ -39,4 +39,4 @@ klien Serupa (`api/_lib/embed.js`) tidak perlu diubah — cukup set
 ## Deploy
 
 Otomatis via GitHub Actions (`.github/workflows/deploy-hf-space.yml`) yang
-menyinkronkan folder `hf-space/` ke Space ini. Lihat `INTEGRATION.md` §F.
+menyinkronkan folder `hf-space/` ke Space ini. Lihat `README.md` (Penyiapan backend).

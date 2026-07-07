@@ -6,7 +6,7 @@
  *   - Hugging Face (embedding) via Vercel Serverless Functions untuk scan.
  *
  * Tidak ada lagi mode mock/localStorage. Semua kunci sensitif (service role,
- * token HF) HANYA di server, tidak pernah di berkas ini. Lihat INTEGRATION.md.
+ * token HF) HANYA di server, tidak pernah di berkas ini. Lihat README.md.
  */
 const env = import.meta.env
 
@@ -30,6 +30,6 @@ if (!supabaseConfigured) {
   // dijalankan (getSupabase() akan menjelaskan bila belum dikonfigurasi).
   console.warn(
     '[Serupa] VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY belum diisi. ' +
-      'Aplikasi memerlukan backend Supabase. Lihat .env.example & INTEGRATION.md.',
+      'Aplikasi memerlukan backend Supabase. Lihat .env.example & README.md.',
   )
 }
