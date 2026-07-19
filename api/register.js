@@ -66,11 +66,33 @@ export default async function handler(req, res) {
       options: { data: { nim, full_name: fullName, role: 'student' } },
     })
     if (error) {
-      const taken = /already|registered|exists/i.test(error.message)
-      return res.status(taken ? 409 : 400).json({
-        error: taken ? 'Email sudah terdaftar. Silakan masuk.' : error.message,
-        code: taken ? 'email_taken' : 'register_failed',
+      // Catat galat ASLI ke log server (Vercel). PENTING: supabase-js sering
+      // "menelan" pesan aslinya — untuk galat 5xx ia membungkus objek Response
+      // mentah, sehingga `error.message` menjadi literal "{}". Status-nya yang
+      // memberi tahu akar masalah, jadi selalu di-log.
+      console.error('[api/register] signUp gagal:', {
+        status: error.status,
+        name: error.name,
+        code: error.code,
+        message: error.message,
       })
+      const msg = String(error.message || '')
+      if (/already|registered|exists/i.test(msg)) {
+        return res.status(409).json({ error: 'Email sudah terdaftar. Silakan masuk.', code: 'email_taken' })
+      }
+      // 5xx / pesan kosong "{}" → GoTrue gagal di sisi server. Dengan "Confirm
+      // email" ON, penyebab tersering adalah GAGAL KIRIM email verifikasi (SMTP
+      // Supabase belum diset / batas kirim tercapai); bisa juga trigger DB
+      // handle_new_user. Jangan teruskan "{}" ke pengguna — beri pesan berguna.
+      if (!msg || msg === '{}' || Number(error.status) >= 500) {
+        return res.status(502).json({
+          error:
+            'Gagal mengirim email verifikasi. Konfigurasi email (SMTP) Supabase mungkin ' +
+            'belum lengkap atau batas kirim tercapai. Coba lagi beberapa saat lagi, atau hubungi admin.',
+          code: 'email_send_failed',
+        })
+      }
+      return res.status(400).json({ error: msg, code: 'register_failed' })
     }
 
     // 3. Confirm email ON → belum ada sesi (perlu OTP). Confirm OFF → sesi langsung.

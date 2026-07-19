@@ -68,6 +68,8 @@ async function submit() {
     console.error('[register]', e)
     const msg = e && typeof e.message === 'string' && e.message ? e.message : 'Registrasi gagal. Coba lagi.'
     if (e?.code === 'nim_taken') errors.nim = msg
+    // Galat kirim email = masalah server/konfigurasi, bukan validasi kolom → toast.
+    else if (e?.code === 'email_send_failed') toast.error('Gagal mengirim email verifikasi', msg)
     else errors.email = msg
   } finally {
     loading.value = false
